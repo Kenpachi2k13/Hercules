@@ -1050,8 +1050,8 @@ struct status_data {
 		hp, sp,  // see status_cpy before adding members before hp and sp
 		max_hp, max_sp;
 	short str, agi, vit, int_, dex, luk;
+	short batk;
 	uint32
-		batk,
 		matk_min, matk_max,
 		speed,
 		amotion, adelay, dmotion,
@@ -1073,7 +1073,7 @@ struct status_data {
 
 	struct weapon_atk rhw, lhw; //Right Hand/Left Hand Weapon.
 #ifdef RENEWAL
-	int equip_atk;
+	short equip_atk;
 #endif
 };
 
