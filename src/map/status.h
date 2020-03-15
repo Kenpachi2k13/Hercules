@@ -1336,11 +1336,11 @@ struct status_interface {
 	defType (*calc_mdef) (struct block_list *bl, struct status_change *sc, int mdef, bool viewable);
 	short (*calc_mdef2) (struct block_list *bl, struct status_change *sc, int mdef2, bool viewable);
 	short (*calc_batk)(struct block_list *bl, struct status_change *sc, int batk, bool viewable);
-	int (*base_matk) (struct block_list *bl, const struct status_data *st, int level);
+	short (*base_matk) (struct block_list *bl, const struct status_data *st, int level);
 	int (*get_weapon_atk) (struct block_list *src, struct weapon_atk *watk, int flag);
 	int (*get_total_mdef) (struct block_list *src);
 	int (*get_total_def) (struct block_list *src);
-	int (*get_matk) (struct block_list *src, int flag);
+	short (*get_matk) (struct block_list *src, int flag);
 	void (*update_matk) ( struct block_list *bl );
 	int (*readdb) (void);
 
@@ -1360,7 +1360,7 @@ struct status_interface {
 	short (*calc_dex) (struct block_list *bl, struct status_change *sc, int dex);
 	short (*calc_luk) (struct block_list *bl, struct status_change *sc, int luk);
 	int (*calc_watk) (struct block_list *bl, struct status_change *sc, int watk, bool viewable);
-	int (*calc_matk) (struct block_list *bl, struct status_change *sc, int matk, bool viewable);
+	short (*calc_matk) (struct block_list *bl, struct status_change *sc, int matk, bool viewable);
 	signed int (*calc_hit) (struct block_list *bl, struct status_change *sc, int hit, bool viewable);
 	signed int (*calc_critical) (struct block_list *bl, struct status_change *sc, int critical, bool viewable);
 	signed int (*calc_flee) (struct block_list *bl, struct status_change *sc, int flee, bool viewable);
@@ -1375,7 +1375,7 @@ struct status_interface {
 	unsigned char (*calc_element) (struct block_list *bl, struct status_change *sc, int element);
 	unsigned char (*calc_element_lv) (struct block_list *bl, struct status_change *sc, int lv);
 	uint32 (*calc_mode) (const struct block_list *bl, const struct status_change *sc, uint32 mode);
-	int (*calc_ematk) (struct block_list *bl, struct status_change *sc, int matk);
+	short (*calc_ematk) (struct block_list *bl, struct status_change *sc, int matk);
 	void (*calc_bl_main) (struct block_list *bl, int flag);
 	void (*display_add) (struct map_session_data *sd, enum sc_type type, int dval1, int dval2, int dval3);
 	void (*display_remove) (struct map_session_data *sd, enum sc_type type);
@@ -1391,8 +1391,8 @@ struct status_interface {
 	void (*read_job_db_sub) (int idx, const char *name, struct config_setting_t *jdb);
 	void (*set_sc) (uint16 skill_id, sc_type sc, unsigned int flag);
 	void (*copy) (struct status_data *a, const struct status_data *b);
-	int (*base_matk_min) (const struct status_data *st);
-	int (*base_matk_max) (const struct status_data *st);
+	short (*base_matk_min) (const struct status_data *st);
+	short (*base_matk_max) (const struct status_data *st);
 };
 
 #ifdef HERCULES_CORE

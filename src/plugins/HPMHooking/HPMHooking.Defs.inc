@@ -7940,16 +7940,16 @@ typedef short (*HPMHOOK_pre_status_calc_mdef2) (struct block_list **bl, struct s
 typedef short (*HPMHOOK_post_status_calc_mdef2) (short retVal___, struct block_list *bl, struct status_change *sc, int mdef2, bool viewable);
 typedef short (*HPMHOOK_pre_status_calc_batk) (struct block_list **bl, struct status_change **sc, int *batk, bool *viewable);
 typedef short (*HPMHOOK_post_status_calc_batk) (short retVal___, struct block_list *bl, struct status_change *sc, int batk, bool viewable);
-typedef int (*HPMHOOK_pre_status_base_matk) (struct block_list **bl, const struct status_data **st, int *level);
-typedef int (*HPMHOOK_post_status_base_matk) (int retVal___, struct block_list *bl, const struct status_data *st, int level);
+typedef short (*HPMHOOK_pre_status_base_matk) (struct block_list **bl, const struct status_data **st, int *level);
+typedef short (*HPMHOOK_post_status_base_matk) (short retVal___, struct block_list *bl, const struct status_data *st, int level);
 typedef int (*HPMHOOK_pre_status_get_weapon_atk) (struct block_list **src, struct weapon_atk **watk, int *flag);
 typedef int (*HPMHOOK_post_status_get_weapon_atk) (int retVal___, struct block_list *src, struct weapon_atk *watk, int flag);
 typedef int (*HPMHOOK_pre_status_get_total_mdef) (struct block_list **src);
 typedef int (*HPMHOOK_post_status_get_total_mdef) (int retVal___, struct block_list *src);
 typedef int (*HPMHOOK_pre_status_get_total_def) (struct block_list **src);
 typedef int (*HPMHOOK_post_status_get_total_def) (int retVal___, struct block_list *src);
-typedef int (*HPMHOOK_pre_status_get_matk) (struct block_list **src, int *flag);
-typedef int (*HPMHOOK_post_status_get_matk) (int retVal___, struct block_list *src, int flag);
+typedef short (*HPMHOOK_pre_status_get_matk) (struct block_list **src, int *flag);
+typedef short (*HPMHOOK_post_status_get_matk) (short retVal___, struct block_list *src, int flag);
 typedef void (*HPMHOOK_pre_status_update_matk) (struct block_list **bl);
 typedef void (*HPMHOOK_post_status_update_matk) (struct block_list *bl);
 typedef int (*HPMHOOK_pre_status_readdb) (void);
@@ -7986,8 +7986,8 @@ typedef short (*HPMHOOK_pre_status_calc_luk) (struct block_list **bl, struct sta
 typedef short (*HPMHOOK_post_status_calc_luk) (short retVal___, struct block_list *bl, struct status_change *sc, int luk);
 typedef int (*HPMHOOK_pre_status_calc_watk) (struct block_list **bl, struct status_change **sc, int *watk, bool *viewable);
 typedef int (*HPMHOOK_post_status_calc_watk) (int retVal___, struct block_list *bl, struct status_change *sc, int watk, bool viewable);
-typedef int (*HPMHOOK_pre_status_calc_matk) (struct block_list **bl, struct status_change **sc, int *matk, bool *viewable);
-typedef int (*HPMHOOK_post_status_calc_matk) (int retVal___, struct block_list *bl, struct status_change *sc, int matk, bool viewable);
+typedef short (*HPMHOOK_pre_status_calc_matk) (struct block_list **bl, struct status_change **sc, int *matk, bool *viewable);
+typedef short (*HPMHOOK_post_status_calc_matk) (short retVal___, struct block_list *bl, struct status_change *sc, int matk, bool viewable);
 typedef signed int (*HPMHOOK_pre_status_calc_hit) (struct block_list **bl, struct status_change **sc, int *hit, bool *viewable);
 typedef signed int (*HPMHOOK_post_status_calc_hit) (signed int retVal___, struct block_list *bl, struct status_change *sc, int hit, bool viewable);
 typedef signed int (*HPMHOOK_pre_status_calc_critical) (struct block_list **bl, struct status_change **sc, int *critical, bool *viewable);
@@ -8016,8 +8016,8 @@ typedef unsigned char (*HPMHOOK_pre_status_calc_element_lv) (struct block_list *
 typedef unsigned char (*HPMHOOK_post_status_calc_element_lv) (unsigned char retVal___, struct block_list *bl, struct status_change *sc, int lv);
 typedef uint32 (*HPMHOOK_pre_status_calc_mode) (const struct block_list **bl, const struct status_change **sc, uint32 *mode);
 typedef uint32 (*HPMHOOK_post_status_calc_mode) (uint32 retVal___, const struct block_list *bl, const struct status_change *sc, uint32 mode);
-typedef int (*HPMHOOK_pre_status_calc_ematk) (struct block_list **bl, struct status_change **sc, int *matk);
-typedef int (*HPMHOOK_post_status_calc_ematk) (int retVal___, struct block_list *bl, struct status_change *sc, int matk);
+typedef short (*HPMHOOK_pre_status_calc_ematk) (struct block_list **bl, struct status_change **sc, int *matk);
+typedef short (*HPMHOOK_post_status_calc_ematk) (short retVal___, struct block_list *bl, struct status_change *sc, int matk);
 typedef void (*HPMHOOK_pre_status_calc_bl_main) (struct block_list **bl, int *flag);
 typedef void (*HPMHOOK_post_status_calc_bl_main) (struct block_list *bl, int flag);
 typedef void (*HPMHOOK_pre_status_display_add) (struct map_session_data **sd, enum sc_type *type, int *dval1, int *dval2, int *dval3);
@@ -8048,10 +8048,10 @@ typedef void (*HPMHOOK_pre_status_set_sc) (uint16 *skill_id, sc_type *sc, unsign
 typedef void (*HPMHOOK_post_status_set_sc) (uint16 skill_id, sc_type sc, unsigned int flag);
 typedef void (*HPMHOOK_pre_status_copy) (struct status_data **a, const struct status_data **b);
 typedef void (*HPMHOOK_post_status_copy) (struct status_data *a, const struct status_data *b);
-typedef int (*HPMHOOK_pre_status_base_matk_min) (const struct status_data **st);
-typedef int (*HPMHOOK_post_status_base_matk_min) (int retVal___, const struct status_data *st);
-typedef int (*HPMHOOK_pre_status_base_matk_max) (const struct status_data **st);
-typedef int (*HPMHOOK_post_status_base_matk_max) (int retVal___, const struct status_data *st);
+typedef short (*HPMHOOK_pre_status_base_matk_min) (const struct status_data **st);
+typedef short (*HPMHOOK_post_status_base_matk_min) (short retVal___, const struct status_data *st);
+typedef short (*HPMHOOK_pre_status_base_matk_max) (const struct status_data **st);
+typedef short (*HPMHOOK_post_status_base_matk_max) (short retVal___, const struct status_data *st);
 #endif // MAP_STATUS_H
 #ifdef MAP_STORAGE_H /* storage */
 typedef void (*HPMHOOK_pre_storage_reconnect) (void);

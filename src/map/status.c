@@ -2755,8 +2755,8 @@ static int status_calc_pc_(struct map_session_data *sd, enum e_status_calc_opt o
 		sd->matk_rate = 0;
 
 	if(sd->matk_rate != 100){
-		bstatus->matk_max = bstatus->matk_max * sd->matk_rate/100;
-		bstatus->matk_min = bstatus->matk_min * sd->matk_rate/100;
+		bstatus->matk_max = cap_value(bstatus->matk_max * sd->matk_rate / 100, SHRT_MIN, SHRT_MAX);
+		bstatus->matk_min = cap_value(bstatus->matk_min * sd->matk_rate / 100, SHRT_MIN, SHRT_MAX);
 	}
 
 	if(sd->hit_rate < 0)
@@ -3186,7 +3186,7 @@ static int status_calc_elemental_(struct elemental_data *ed, enum e_status_calc_
 		estatus->rhw.atk = ele->atk;
 		estatus->rhw.atk2 = ele->atk2;
 
-		estatus->matk_min += ele->matk;
+		estatus->matk_min = cap_value(estatus->matk_min + ele->matk, SHRT_MIN, SHRT_MAX);
 		estatus->def += ele->def;
 		estatus->mdef += ele->mdef;
 		estatus->flee = ele->flee;
@@ -4304,7 +4304,7 @@ static short status_base_atk(const struct block_list *bl, const struct status_da
 	return cap_value(str, battle_config.batk_min, battle_config.batk_max);
 }
 
-static int status_base_matk_min(const struct status_data *st)
+static short status_base_matk_min(const struct status_data *st)
 {
 	nullpo_ret(st);
 #ifdef RENEWAL
@@ -4316,14 +4316,14 @@ static int status_base_matk_min(const struct status_data *st)
 #endif // RENEWAL
 }
 
-static int status_base_matk_max(const struct status_data *st)
+static short status_base_matk_max(const struct status_data *st)
 {
 	nullpo_ret(st);
 	int matk = st->int_ + (st->int_ / 5) * (st->int_ / 5);
 	return cap_value(matk, battle_config.matk_min, battle_config.matk_max);
 }
 
-static int status_base_matk(struct block_list *bl, const struct status_data *st, int level)
+static short status_base_matk(struct block_list *bl, const struct status_data *st, int level)
 {
 #ifdef RENEWAL
 	nullpo_ret(bl);
@@ -4417,7 +4417,8 @@ static void status_calc_misc(struct block_list *bl, struct status_data *st, int 
 				break;
 			case BL_MER:
 	#ifdef RENEWAL
-				st->matk_min = st->matk_max = status->base_matk_max(st);
+				st->matk_min = status->base_matk_max(st);
+				st->matk_max = status->base_matk_max(st);
 				st->def2 = st->vit + level / 10 + st->vit / 5;
 				st->mdef2 = level / 10 + st->int_ / 5;
 	#endif
@@ -4987,7 +4988,7 @@ static int status_calc_watk(struct block_list *bl, struct status_change *sc, int
 	return cap_value(watk, battle_config.watk_min, battle_config.watk_max);
 }
 
-static int status_calc_ematk(struct block_list *bl, struct status_change *sc, int matk)
+static short status_calc_ematk(struct block_list *bl, struct status_change *sc, int matk)
 {
 #ifdef RENEWAL
 	if (!sc || !sc->count)
@@ -5018,7 +5019,7 @@ static int status_calc_ematk(struct block_list *bl, struct status_change *sc, in
 #endif
 }
 
-static int status_calc_matk(struct block_list *bl, struct status_change *sc, int matk, bool viewable)
+static short status_calc_matk(struct block_list *bl, struct status_change *sc, int matk, bool viewable)
 {
 	if (!sc || !sc->count)
 		return cap_value(matk, battle_config.matk_min, battle_config.matk_max);
@@ -12335,7 +12336,7 @@ static int status_get_weapon_atk(struct block_list *bl, struct weapon_atk *watk,
  *   1 - Get MATK w/o SC bonuses
  *   3 - Get MATK w/o EATK & SC bonuses
  */
-static void status_get_matk_sub(struct block_list *bl, int flag, unsigned short *matk_max, unsigned short *matk_min)
+static void status_get_matk_sub(struct block_list *bl, int flag, short *matk_max, short *matk_min)
 {
 	struct status_data *st;
 	struct status_change *sc;
@@ -12362,10 +12363,10 @@ static void status_get_matk_sub(struct block_list *bl, int flag, unsigned short 
 
 	//  Any +MATK you get from skills and cards, including cards in weapon, is added here.
 	if ( sd && sd->bonus.ematk > 0 && flag != 3 )
-		*matk_min += sd->bonus.ematk;
+		*matk_min = cap_value(*matk_min + sd->bonus.ematk, SHRT_MIN, SHRT_MAX);
 	if (sd && pc->checkskill(sd, SU_POWEROFLAND) > 0) {
 		if (pc->checkskill(sd, SU_SV_STEMSPEAR) == 5 && pc->checkskill(sd, SU_CN_POWDERING) == 5 && pc->checkskill(sd, SU_CN_METEOR) == 5 && pc->checkskill(sd, SU_SV_ROOTTWIST) == 5)
-			*matk_min += *matk_min * 20 / 100;
+			*matk_min = cap_value(*matk_min + *matk_min * 20 / 100, SHRT_MIN, SHRT_MAX);
 	}
 	if ( flag != 3 )
 		*matk_min = status->calc_ematk(bl, sc, *matk_min);
@@ -12380,41 +12381,43 @@ static void status_get_matk_sub(struct block_list *bl, int flag, unsigned short 
 				int variance = wMatk * st->rhw.wlv / 10; // Only use right hand weapon level
 				if (sc != NULL && sc->data[SC_CATNIPPOWDER])
 					wMatk -= wMatk * sc->data[SC_CATNIPPOWDER]->val2 / 100;
-				*matk_min += wMatk - variance;
-				*matk_max += wMatk + variance;
+				*matk_min = cap_value(*matk_min + wMatk - variance, SHRT_MIN, SHRT_MAX);
+				*matk_max = cap_value(*matk_max + wMatk + variance, SHRT_MIN, SHRT_MAX);
 			}
 			break;
 		case BL_MER:
 		{
 			const struct mercenary_data *mc = BL_UCCAST(BL_MER, bl);
-			*matk_min += 70 * mc->battle_status.rhw.atk2 / 100;
-			*matk_max += 130 * mc->battle_status.rhw.atk2 / 100;
+			*matk_min = cap_value(*matk_min + 70 * mc->battle_status.rhw.atk2 / 100, SHRT_MIN, SHRT_MAX);
+			*matk_max = cap_value(*matk_max + 130 * mc->battle_status.rhw.atk2 / 100, SHRT_MIN, SHRT_MAX);
 		}
 			break;
 		case BL_MOB:
 		{
 			const struct mob_data *md = BL_UCCAST(BL_MOB, bl);
-			*matk_min += 70 * md->status.rhw.atk2 / 100;
-			*matk_max += 130 * md->status.rhw.atk2 / 100;
+			*matk_min = cap_value(*matk_min + 70 * md->status.rhw.atk2 / 100, SHRT_MIN, SHRT_MAX);
+			*matk_max = cap_value(*matk_max + 130 * md->status.rhw.atk2 / 100, SHRT_MIN, SHRT_MAX);
 		}
 			break;
 		case BL_HOM:
 		{
 			const struct homun_data *hd = BL_UCCAST(BL_HOM, bl);
-			*matk_min += (status_get_homint(st, hd) + status_get_homdex(st, hd)) / 5;
-			*matk_max += (status_get_homluk(st, hd) + status_get_homint(st, hd) + status_get_homdex(st, hd)) / 3;
+			int hom_min = (status_get_homint(st, hd) + status_get_homdex(st, hd)) / 5;
+			int hom_max = (status_get_homluk(st, hd) + status_get_homint(st, hd) + status_get_homdex(st, hd)) / 3;
+			*matk_min = cap_value(*matk_min + hom_min, SHRT_MIN, SHRT_MAX);
+			*matk_max = cap_value(*matk_max + hom_max, SHRT_MIN, SHRT_MAX);
 		}
 			break;
 	}
 
 #else // not RENEWAL
-	*matk_min = status->base_matk_min(st) + (sd ? sd->bonus.ematk : 0);
-	*matk_max = status->base_matk_max(st) + (sd ? sd->bonus.ematk : 0);
+	*matk_min = cap_value(status->base_matk_min(st) + ((sd != NULL) ? sd->bonus.ematk : 0), SHRT_MIN, SHRT_MAX);
+	*matk_max = cap_value(status->base_matk_max(st) + ((sd != NULL) ? sd->bonus.ematk : 0), SHRT_MIN, SHRT_MAX);
 #endif
 
 	if ( sd && sd->matk_rate != 100 ) {
-		*matk_max = (*matk_max) * sd->matk_rate / 100;
-		*matk_min = (*matk_min) * sd->matk_rate / 100;
+		*matk_max = cap_value((*matk_max) * sd->matk_rate / 100, SHRT_MIN, SHRT_MAX);
+		*matk_min = cap_value((*matk_min) * sd->matk_rate / 100, SHRT_MIN, SHRT_MAX);
 	}
 
 	if ( (bl->type&BL_HOM && battle_config.hom_setting & 0x20)  //Hom Min Matk is always the same as Max Matk
@@ -12428,7 +12431,7 @@ static void status_get_matk_sub(struct block_list *bl, int flag, unsigned short 
 			&& (refine_level = sd->status.inventory[index].refine) < 16 && refine_level) {
 			int r = refine->get_randombonus_max(sd->inventory_data[index]->wlv, refine_level + (4 - sd->inventory_data[index]->wlv) + 1) / 100;
 			if ( r )
-				*matk_max += (rnd() % 100) % r + 1;
+				*matk_max = cap_value(*matk_max + (rnd() % 100) % r + 1, SHRT_MIN, SHRT_MAX);
 		}
 	}
 #endif
@@ -12449,10 +12452,10 @@ static void status_get_matk_sub(struct block_list *bl, int flag, unsigned short 
 /**
  * Gets a random matk value depending on min matk and max matk
  */
-static unsigned short status_get_rand_matk(unsigned short matk_max, unsigned short matk_min)
+static short status_get_rand_matk(short matk_max, short matk_min)
 {
 	if ( matk_max > matk_min )
-		return matk_min + rnd() % (matk_max - matk_min);
+		return cap_value(matk_min + rnd() % (matk_max - matk_min), SHRT_MIN, SHRT_MAX);
 	else
 		return matk_min;
 }
@@ -12468,10 +12471,11 @@ static unsigned short status_get_rand_matk(unsigned short matk_max, unsigned sho
  *
  * Shouldn't change _any_ value! [Panikon]
  */
-static int status_get_matk(struct block_list *bl, int flag)
+static short status_get_matk(struct block_list *bl, int flag)
 {
 	struct status_data *st;
-	unsigned short matk_max, matk_min;
+	short matk_max;
+	short matk_min;
 
 	if ( bl == NULL )
 		return 1;
@@ -12501,7 +12505,8 @@ static void status_update_matk(struct block_list *bl)
 {
 	struct status_data *st;
 	struct status_change *sc;
-	unsigned short matk_max, matk_min;
+	short matk_max;
+	short matk_min;
 
 	if ( bl == NULL )
 		return;

@@ -19796,10 +19796,10 @@ static BUILDIN(setunitdata)
 			md->status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			md->status.matk_min = (unsigned short) val;
+			md->status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			md->status.matk_max = (unsigned short) val;
+			md->status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			md->status.def = (defType) val;
@@ -19928,10 +19928,10 @@ static BUILDIN(setunitdata)
 			hd->base_status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			hd->base_status.matk_min = (unsigned short) val;
+			hd->base_status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			hd->base_status.matk_max = (unsigned short) val;
+			hd->base_status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			hd->base_status.def = (defType) val;
@@ -20067,10 +20067,10 @@ static BUILDIN(setunitdata)
 			pd->status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			pd->status.matk_min = (unsigned short) val;
+			pd->status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			pd->status.matk_max = (unsigned short) val;
+			pd->status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			pd->status.def = (defType) val;
@@ -20200,10 +20200,10 @@ static BUILDIN(setunitdata)
 			mc->base_status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			mc->base_status.matk_min = (unsigned short) val;
+			mc->base_status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			mc->base_status.matk_max = (unsigned short) val;
+			mc->base_status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			mc->base_status.def = (defType) val;
@@ -20334,10 +20334,10 @@ static BUILDIN(setunitdata)
 			ed->base_status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			ed->base_status.matk_min = (unsigned short) val;
+			ed->base_status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			ed->base_status.matk_max = (unsigned short) val;
+			ed->base_status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			ed->base_status.def = (defType) val;
@@ -20466,10 +20466,10 @@ static BUILDIN(setunitdata)
 			nd->status.rhw.atk2 = (unsigned short) val;
 			break;
 		case UDT_MATKMIN:
-			nd->status.matk_min = (unsigned short) val;
+			nd->status.matk_min = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_MATKMAX:
-			nd->status.matk_max = (unsigned short) val;
+			nd->status.matk_max = cap_value(val, SHRT_MIN, SHRT_MAX);
 			break;
 		case UDT_DEF:
 			nd->status.def = (defType) val;

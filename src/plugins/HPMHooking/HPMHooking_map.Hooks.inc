@@ -86391,11 +86391,11 @@ short HP_status_calc_batk(struct block_list *bl, struct status_change *sc, int b
 	}
 	return retVal___;
 }
-int HP_status_base_matk(struct block_list *bl, const struct status_data *st, int level) {
+short HP_status_base_matk(struct block_list *bl, const struct status_data *st, int level) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_base_matk_pre > 0) {
-		int (*preHookFunc) (struct block_list **bl, const struct status_data **st, int *level);
+		short (*preHookFunc) (struct block_list **bl, const struct status_data **st, int *level);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_base_matk_pre[hIndex].func;
@@ -86410,7 +86410,7 @@ int HP_status_base_matk(struct block_list *bl, const struct status_data *st, int
 		retVal___ = HPMHooks.source.status.base_matk(bl, st, level);
 	}
 	if (HPMHooks.count.HP_status_base_matk_post > 0) {
-		int (*postHookFunc) (int retVal___, struct block_list *bl, const struct status_data *st, int level);
+		short (*postHookFunc) (short retVal___, struct block_list *bl, const struct status_data *st, int level);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_base_matk_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, bl, st, level);
@@ -86499,11 +86499,11 @@ int HP_status_get_total_def(struct block_list *src) {
 	}
 	return retVal___;
 }
-int HP_status_get_matk(struct block_list *src, int flag) {
+short HP_status_get_matk(struct block_list *src, int flag) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_get_matk_pre > 0) {
-		int (*preHookFunc) (struct block_list **src, int *flag);
+		short (*preHookFunc) (struct block_list **src, int *flag);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_get_matk_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_get_matk_pre[hIndex].func;
@@ -86518,7 +86518,7 @@ int HP_status_get_matk(struct block_list *src, int flag) {
 		retVal___ = HPMHooks.source.status.get_matk(src, flag);
 	}
 	if (HPMHooks.count.HP_status_get_matk_post > 0) {
-		int (*postHookFunc) (int retVal___, struct block_list *src, int flag);
+		short (*postHookFunc) (short retVal___, struct block_list *src, int flag);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_get_matk_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_get_matk_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, src, flag);
@@ -87009,11 +87009,11 @@ int HP_status_calc_watk(struct block_list *bl, struct status_change *sc, int wat
 	}
 	return retVal___;
 }
-int HP_status_calc_matk(struct block_list *bl, struct status_change *sc, int matk, bool viewable) {
+short HP_status_calc_matk(struct block_list *bl, struct status_change *sc, int matk, bool viewable) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_calc_matk_pre > 0) {
-		int (*preHookFunc) (struct block_list **bl, struct status_change **sc, int *matk, bool *viewable);
+		short (*preHookFunc) (struct block_list **bl, struct status_change **sc, int *matk, bool *viewable);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_calc_matk_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_calc_matk_pre[hIndex].func;
@@ -87028,7 +87028,7 @@ int HP_status_calc_matk(struct block_list *bl, struct status_change *sc, int mat
 		retVal___ = HPMHooks.source.status.calc_matk(bl, sc, matk, viewable);
 	}
 	if (HPMHooks.count.HP_status_calc_matk_post > 0) {
-		int (*postHookFunc) (int retVal___, struct block_list *bl, struct status_change *sc, int matk, bool viewable);
+		short (*postHookFunc) (short retVal___, struct block_list *bl, struct status_change *sc, int matk, bool viewable);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_calc_matk_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_calc_matk_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, bl, sc, matk, viewable);
@@ -87414,11 +87414,11 @@ uint32 HP_status_calc_mode(const struct block_list *bl, const struct status_chan
 	}
 	return retVal___;
 }
-int HP_status_calc_ematk(struct block_list *bl, struct status_change *sc, int matk) {
+short HP_status_calc_ematk(struct block_list *bl, struct status_change *sc, int matk) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_calc_ematk_pre > 0) {
-		int (*preHookFunc) (struct block_list **bl, struct status_change **sc, int *matk);
+		short (*preHookFunc) (struct block_list **bl, struct status_change **sc, int *matk);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_calc_ematk_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_calc_ematk_pre[hIndex].func;
@@ -87433,7 +87433,7 @@ int HP_status_calc_ematk(struct block_list *bl, struct status_change *sc, int ma
 		retVal___ = HPMHooks.source.status.calc_ematk(bl, sc, matk);
 	}
 	if (HPMHooks.count.HP_status_calc_ematk_post > 0) {
-		int (*postHookFunc) (int retVal___, struct block_list *bl, struct status_change *sc, int matk);
+		short (*postHookFunc) (short retVal___, struct block_list *bl, struct status_change *sc, int matk);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_calc_ematk_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_calc_ematk_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, bl, sc, matk);
@@ -87845,11 +87845,11 @@ void HP_status_copy(struct status_data *a, const struct status_data *b) {
 	}
 	return;
 }
-int HP_status_base_matk_min(const struct status_data *st) {
+short HP_status_base_matk_min(const struct status_data *st) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_base_matk_min_pre > 0) {
-		int (*preHookFunc) (const struct status_data **st);
+		short (*preHookFunc) (const struct status_data **st);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_min_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_base_matk_min_pre[hIndex].func;
@@ -87864,7 +87864,7 @@ int HP_status_base_matk_min(const struct status_data *st) {
 		retVal___ = HPMHooks.source.status.base_matk_min(st);
 	}
 	if (HPMHooks.count.HP_status_base_matk_min_post > 0) {
-		int (*postHookFunc) (int retVal___, const struct status_data *st);
+		short (*postHookFunc) (short retVal___, const struct status_data *st);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_min_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_base_matk_min_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, st);
@@ -87872,11 +87872,11 @@ int HP_status_base_matk_min(const struct status_data *st) {
 	}
 	return retVal___;
 }
-int HP_status_base_matk_max(const struct status_data *st) {
+short HP_status_base_matk_max(const struct status_data *st) {
 	int hIndex = 0;
-	int retVal___ = 0;
+	short retVal___ = 0;
 	if (HPMHooks.count.HP_status_base_matk_max_pre > 0) {
-		int (*preHookFunc) (const struct status_data **st);
+		short (*preHookFunc) (const struct status_data **st);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_max_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_status_base_matk_max_pre[hIndex].func;
@@ -87891,7 +87891,7 @@ int HP_status_base_matk_max(const struct status_data *st) {
 		retVal___ = HPMHooks.source.status.base_matk_max(st);
 	}
 	if (HPMHooks.count.HP_status_base_matk_max_post > 0) {
-		int (*postHookFunc) (int retVal___, const struct status_data *st);
+		short (*postHookFunc) (short retVal___, const struct status_data *st);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_status_base_matk_max_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_status_base_matk_max_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, st);

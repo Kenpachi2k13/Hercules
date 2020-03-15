@@ -3447,10 +3447,10 @@ static void clif_updatestatus(struct map_session_data *sd, int type)
 			WFIFOL(fd,4)=sd->battle_status.cri/10;
 			break;
 		case SP_MATK1:
-			WFIFOL(fd,4)=pc_rightside_matk(sd);
+			WFIFOL(fd, 4) = cap_value(pc_rightside_matk(sd), SHRT_MIN, SHRT_MAX);
 			break;
 		case SP_MATK2:
-			WFIFOL(fd,4)=pc_leftside_matk(sd);
+			WFIFOL(fd, 4) = cap_value(pc_leftside_matk(sd), SHRT_MIN, SHRT_MAX);
 			break;
 		case SP_ZENY:
 // [4144] possible send 64 bit value from PACKETVER_MAIN_NUM >= 20170906 || PACKETVER_RE_NUM >= 20170830 || defined(PACKETVER_ZERO)
@@ -3837,8 +3837,8 @@ static void clif_initialstatus(struct map_session_data *sd)
 
 	WBUFW(buf, 16) = cap_value(pc_leftside_atk(sd), SHRT_MIN, SHRT_MAX);
 	WBUFW(buf, 18) = cap_value(pc_rightside_atk(sd), SHRT_MIN, SHRT_MAX);
-	WBUFW(buf,20) = pc_rightside_matk(sd);
-	WBUFW(buf,22) = pc_leftside_matk(sd);
+	WBUFW(buf, 20) = cap_value(pc_rightside_matk(sd), SHRT_MIN, SHRT_MAX);
+	WBUFW(buf, 22) = cap_value(pc_leftside_matk(sd), SHRT_MIN, SHRT_MAX);
 	WBUFW(buf,24) = pc_leftside_def(sd);
 	WBUFW(buf,26) = pc_rightside_def(sd);
 	WBUFW(buf,28) = pc_leftside_mdef(sd);

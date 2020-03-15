@@ -18842,7 +18842,9 @@ static int skill_magicdecoy(struct map_session_data *sd, int nameid)
 			timer->delete(md->deletetimer, mob->timer_delete);
 		md->deletetimer = timer->add(timer->gettick() + skill->get_time(NC_MAGICDECOY,skill_id), mob->timer_delete, md->bl.id, 0);
 		mob->spawn(md);
-		md->status.matk_min = md->status.matk_max = 250 + (50 * skill_id);
+		int matk = cap_value(250 + 50 * skill_id, SHRT_MIN, SHRT_MAX);
+		md->status.matk_min = matk;
+		md->status.matk_max = matk;
 	}
 
 	return 0;
