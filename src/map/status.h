@@ -1049,7 +1049,7 @@ struct status_data {
 	uint32
 		hp, sp,  // see status_cpy before adding members before hp and sp
 		max_hp, max_sp;
-	uint16 str, agi, vit, int_, dex, luk;
+	short str, agi, vit, int_, dex, luk;
 	uint32
 		batk,
 		matk_min, matk_max,
