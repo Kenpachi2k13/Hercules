@@ -1051,8 +1051,9 @@ struct status_data {
 		max_hp, max_sp;
 	short str, agi, vit, int_, dex, luk;
 	short batk;
+	short matk_min;
+	short matk_max;
 	uint32
-		matk_min, matk_max,
 		speed,
 		amotion, adelay, dmotion,
 		mode;
