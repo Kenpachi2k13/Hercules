@@ -1334,7 +1334,7 @@ struct status_interface {
 	short (*calc_def2) (struct block_list *bl, struct status_change *sc, int def2, bool viewable);
 	defType (*calc_mdef) (struct block_list *bl, struct status_change *sc, int mdef, bool viewable);
 	short (*calc_mdef2) (struct block_list *bl, struct status_change *sc, int mdef2, bool viewable);
-	int (*calc_batk)(struct block_list *bl, struct status_change *sc, int batk, bool viewable);
+	short (*calc_batk)(struct block_list *bl, struct status_change *sc, int batk, bool viewable);
 	int (*base_matk) (struct block_list *bl, const struct status_data *st, int level);
 	int (*get_weapon_atk) (struct block_list *src, struct weapon_atk *watk, int flag);
 	int (*get_total_mdef) (struct block_list *src);
@@ -1346,7 +1346,7 @@ struct status_interface {
 	void (*initChangeTables) (void);
 	void (*initDummyData) (void);
 	int (*base_amotion_pc) (struct map_session_data *sd, struct status_data *st);
-	int (*base_atk) (const struct block_list *bl, const struct status_data *st);
+	short (*base_atk) (const struct block_list *bl, const struct status_data *st);
 	unsigned int (*get_base_maxhp) (const struct map_session_data *sd, const struct status_data *st);
 	unsigned int (*get_base_maxsp) (const struct map_session_data *sd, const struct status_data *st);
 	unsigned int (*get_restart_hp) (const struct map_session_data *sd, const struct status_data *st);

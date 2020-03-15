@@ -2451,10 +2451,9 @@ static int pc_bonus(struct map_session_data *sd, int type, int val)
 		case SP_BASE_ATK:
 			if(sd->state.lr_flag != 2) {
 #ifdef RENEWAL
-				bst->equip_atk += val;
+				bst->equip_atk = cap_value(bst->equip_atk + val, SHRT_MIN, SHRT_MAX);
 #else
-				bonus = bst->batk + val;
-				bst->batk = cap_value(bonus, 0, USHRT_MAX);
+				bst->batk = cap_value(bst->batk + val, SHRT_MIN, SHRT_MAX);
 #endif
 			}
 			break;

@@ -2014,7 +2014,8 @@ static int status_calc_mob_(struct mob_data *md, enum e_status_calc_opt opt)
 				mstatus->mdef += (gc->defense+2)/3;
 			}
 			if (md->class_ != MOBID_EMPELIUM) {
-				mstatus->batk += mstatus->batk * 10*guardup_lv/100;
+				int batk = mstatus->batk + mstatus->batk * 10 * guardup_lv / 100;
+				mstatus->batk = cap_value(batk, SHRT_MIN, SHRT_MAX);
 				mstatus->rhw.atk += mstatus->rhw.atk * 10*guardup_lv/100;
 				mstatus->rhw.atk2 += mstatus->rhw.atk2 * 10*guardup_lv/100;
 				mstatus->aspd_rate -= 100*guardup_lv;
@@ -2669,11 +2670,11 @@ static int status_calc_pc_(struct map_session_data *sd, enum e_status_calc_opt o
 	// Base batk value is set on status->calc_misc
 	// weapon-type bonus (FIXME: Why is the weapon_atk bonus applied to base attack?)
 	if (sd->weapontype < MAX_SINGLE_WEAPON_TYPE && sd->weapon_atk[sd->weapontype])
-		bstatus->batk += sd->weapon_atk[sd->weapontype];
+		bstatus->batk = cap_value(bstatus->batk + sd->weapon_atk[sd->weapontype], SHRT_MIN, SHRT_MAX);
 	// Absolute modifiers from passive skills
 #ifndef RENEWAL
 	if((skill_lv=pc->checkskill(sd,BS_HILTBINDING))>0) // it doesn't work in RE.
-		bstatus->batk += 4;
+		bstatus->batk = cap_value(bstatus->batk + 4, SHRT_MIN, SHRT_MAX);
 #endif
 
 	// ----- HP MAX CALCULATION -----
@@ -4243,7 +4244,7 @@ static int status_base_amotion_pc(struct map_session_data *sd, struct status_dat
 	return amotion;
 }
 
-static int status_base_atk(const struct block_list *bl, const struct status_data *st)
+static short status_base_atk(const struct block_list *bl, const struct status_data *st)
 {
 	int flag = 0, str, dex, dstr;
 
@@ -4797,7 +4798,7 @@ static short status_calc_luk(struct block_list *bl, struct status_change *sc, in
 	return cap_value(luk, SHRT_MIN, SHRT_MAX);
 }
 
-static int status_calc_batk(struct block_list *bl, struct status_change *sc, int batk, bool viewable)
+static short status_calc_batk(struct block_list *bl, struct status_change *sc, int batk, bool viewable)
 {
 	nullpo_ret(bl);
 	if(!sc || !sc->count)

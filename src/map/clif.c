@@ -3417,7 +3417,7 @@ static void clif_updatestatus(struct map_session_data *sd, int type)
 			WFIFOL(fd,4)=sd->battle_status.amotion;
 			break;
 		case SP_ATK1:
-			WFIFOL(fd,4)=pc_leftside_atk(sd);
+			WFIFOL(fd, 4) = cap_value(pc_leftside_atk(sd), SHRT_MIN, SHRT_MAX);
 			break;
 		case SP_DEF1:
 			WFIFOL(fd,4)=pc_leftside_def(sd);
@@ -3426,7 +3426,7 @@ static void clif_updatestatus(struct map_session_data *sd, int type)
 			WFIFOL(fd,4)=pc_leftside_mdef(sd);
 			break;
 		case SP_ATK2:
-			WFIFOL(fd,4)=pc_rightside_atk(sd);
+			WFIFOL(fd, 4) = cap_value(pc_rightside_atk(sd), SHRT_MIN, SHRT_MAX);
 			break;
 		case SP_DEF2:
 			WFIFOL(fd,4)=pc_rightside_def(sd);
@@ -3835,8 +3835,8 @@ static void clif_initialstatus(struct map_session_data *sd)
 	WBUFB(buf,14)=min(sd->status.luk, UINT8_MAX);
 	WBUFB(buf,15)=pc->need_status_point(sd,SP_LUK,1);
 
-	WBUFW(buf,16) = pc_leftside_atk(sd);
-	WBUFW(buf,18) = pc_rightside_atk(sd);
+	WBUFW(buf, 16) = cap_value(pc_leftside_atk(sd), SHRT_MIN, SHRT_MAX);
+	WBUFW(buf, 18) = cap_value(pc_rightside_atk(sd), SHRT_MIN, SHRT_MAX);
 	WBUFW(buf,20) = pc_rightside_matk(sd);
 	WBUFW(buf,22) = pc_leftside_matk(sd);
 	WBUFW(buf,24) = pc_leftside_def(sd);
@@ -16648,7 +16648,8 @@ static void clif_check(int fd, struct map_session_data *pl_sd)
 	WFIFOB(fd,11) = pc->need_status_point(pl_sd, SP_DEX, 1);
 	WFIFOB(fd,12) = min(pl_sd->status.luk, UINT8_MAX);
 	WFIFOB(fd,13) = pc->need_status_point(pl_sd, SP_LUK, 1);
-	WFIFOW(fd,14) = pl_sd->battle_status.batk+pl_sd->battle_status.rhw.atk+pl_sd->battle_status.lhw.atk;
+	int atk1 = pl_sd->battle_status.batk + pl_sd->battle_status.rhw.atk + pl_sd->battle_status.lhw.atk;
+	WFIFOW(fd, 14) = cap_value(atk1, SHRT_MIN, SHRT_MAX);
 	WFIFOW(fd,16) = pl_sd->battle_status.rhw.atk2+pl_sd->battle_status.lhw.atk2;
 	WFIFOW(fd,18) = pl_sd->battle_status.matk_max;
 	WFIFOW(fd,20) = pl_sd->battle_status.matk_min;
