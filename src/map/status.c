@@ -1943,12 +1943,12 @@ static int status_calc_mob_(struct mob_data *md, enum e_status_calc_opt opt)
 	if (flag&1) {
 		// increase from mobs leveling up [Valaris]
 		int diff = md->level - md->db->lv;
-		mstatus->str+= diff;
-		mstatus->agi+= diff;
-		mstatus->vit+= diff;
-		mstatus->int_+= diff;
-		mstatus->dex+= diff;
-		mstatus->luk+= diff;
+		mstatus->str = cap_value(mstatus->str + diff, SHRT_MIN, SHRT_MAX);
+		mstatus->agi = cap_value(mstatus->agi + diff, SHRT_MIN, SHRT_MAX);
+		mstatus->vit = cap_value(mstatus->vit + diff, SHRT_MIN, SHRT_MAX);
+		mstatus->int_ = cap_value(mstatus->int_ + diff, SHRT_MIN, SHRT_MAX);
+		mstatus->dex = cap_value(mstatus->dex + diff, SHRT_MIN, SHRT_MAX);
+		mstatus->luk = cap_value(mstatus->luk + diff, SHRT_MIN, SHRT_MAX);
 		mstatus->max_hp += diff*mstatus->vit;
 		mstatus->max_sp += diff*mstatus->int_;
 		mstatus->hp = mstatus->max_hp;
@@ -1982,12 +1982,12 @@ static int status_calc_mob_(struct mob_data *md, enum e_status_calc_opt opt)
 			mstatus->max_sp<<=1;
 			mstatus->hp=mstatus->max_hp;
 			mstatus->sp=mstatus->max_sp;
-			mstatus->str<<=1;
-			mstatus->agi<<=1;
-			mstatus->vit<<=1;
-			mstatus->int_<<=1;
-			mstatus->dex<<=1;
-			mstatus->luk<<=1;
+			mstatus->str = cap_value(mstatus->str << 1, SHRT_MIN, SHRT_MAX);
+			mstatus->agi = cap_value(mstatus->agi << 1, SHRT_MIN, SHRT_MAX);
+			mstatus->vit = cap_value(mstatus->vit << 1, SHRT_MIN, SHRT_MAX);
+			mstatus->int_ = cap_value(mstatus->int_ << 1, SHRT_MIN, SHRT_MAX);
+			mstatus->dex = cap_value(mstatus->dex << 1, SHRT_MIN, SHRT_MAX);
+			mstatus->luk = cap_value(mstatus->luk << 1, SHRT_MIN, SHRT_MAX);
 		}
 	}
 
@@ -2055,21 +2055,15 @@ static int status_calc_pet_(struct pet_data *pd, enum e_status_calc_opt opt)
 				clif->misceffect(&pd->bl, 0);
 			pstatus->rhw.atk = (bstat->rhw.atk*lv)/pd->db->lv;
 			pstatus->rhw.atk2 = (bstat->rhw.atk2*lv)/pd->db->lv;
-			pstatus->str = (bstat->str*lv)/pd->db->lv;
-			pstatus->agi = (bstat->agi*lv)/pd->db->lv;
-			pstatus->vit = (bstat->vit*lv)/pd->db->lv;
-			pstatus->int_ = (bstat->int_*lv)/pd->db->lv;
-			pstatus->dex = (bstat->dex*lv)/pd->db->lv;
-			pstatus->luk = (bstat->luk*lv)/pd->db->lv;
+			pstatus->str = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
+			pstatus->agi = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
+			pstatus->vit = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
+			pstatus->int_ = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
+			pstatus->dex = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
+			pstatus->luk = cap_value(bstat->str * lv / pd->db->lv, 1, battle_config.pet_max_stats);
 
 			pstatus->rhw.atk = cap_value(pstatus->rhw.atk, 1, battle_config.pet_max_atk1);
 			pstatus->rhw.atk2 = cap_value(pstatus->rhw.atk2, 2, battle_config.pet_max_atk2);
-			pstatus->str = cap_value(pstatus->str,1,battle_config.pet_max_stats);
-			pstatus->agi = cap_value(pstatus->agi,1,battle_config.pet_max_stats);
-			pstatus->vit = cap_value(pstatus->vit,1,battle_config.pet_max_stats);
-			pstatus->int_= cap_value(pstatus->int_,1,battle_config.pet_max_stats);
-			pstatus->dex = cap_value(pstatus->dex,1,battle_config.pet_max_stats);
-			pstatus->luk = cap_value(pstatus->luk,1,battle_config.pet_max_stats);
 
 			status->calc_misc(&pd->bl, &pd->status, lv);
 
@@ -2612,51 +2606,63 @@ static int status_calc_pc_(struct map_session_data *sd, enum e_status_calc_opt o
 	for (i = 0; i < sd->status.job_level && i < MAX_LEVEL; i++) {
 		if(!status->dbs->job_bonus[index][i])
 			continue;
-		switch(status->dbs->job_bonus[index][i]) {
-			case 1: bstatus->str++; break;
-			case 2: bstatus->agi++; break;
-			case 3: bstatus->vit++; break;
-			case 4: bstatus->int_++; break;
-			case 5: bstatus->dex++; break;
-			case 6: bstatus->luk++; break;
+		switch (status->dbs->job_bonus[index][i]) {
+		case 1:
+			bstatus->str = cap_value(bstatus->str + 1, SHRT_MIN, SHRT_MAX);
+			break;
+		case 2:
+			bstatus->agi = cap_value(bstatus->agi + 1, SHRT_MIN, SHRT_MAX);
+			break;
+		case 3:
+			bstatus->vit = cap_value(bstatus->vit + 1, SHRT_MIN, SHRT_MAX);
+			break;
+		case 4:
+			bstatus->int_ = cap_value(bstatus->int_ + 1, SHRT_MIN, SHRT_MAX);
+			break;
+		case 5:
+			bstatus->dex = cap_value(bstatus->dex + 1, SHRT_MIN, SHRT_MAX);
+			break;
+		case 6:
+			bstatus->luk = cap_value(bstatus->luk + 1, SHRT_MIN, SHRT_MAX);
+			break;
 		}
 	}
 
 	// If a Super Novice has never died and is at least joblv 70, he gets all stats +10
 	if ((sd->job & MAPID_UPPERMASK) == MAPID_SUPER_NOVICE && sd->die_counter == 0 && sd->status.job_level >= 70) {
-		bstatus->str += 10;
-		bstatus->agi += 10;
-		bstatus->vit += 10;
-		bstatus->int_+= 10;
-		bstatus->dex += 10;
-		bstatus->luk += 10;
+		bstatus->str = cap_value(bstatus->str + 10, SHRT_MIN, SHRT_MAX);
+		bstatus->agi = cap_value(bstatus->agi + 10, SHRT_MIN, SHRT_MAX);
+		bstatus->vit = cap_value(bstatus->vit + 10, SHRT_MIN, SHRT_MAX);
+		bstatus->int_ = cap_value(bstatus->int_ + 10, SHRT_MIN, SHRT_MAX);
+		bstatus->dex = cap_value(bstatus->dex + 10, SHRT_MIN, SHRT_MAX);
+		bstatus->luk = cap_value(bstatus->luk + 10, SHRT_MIN, SHRT_MAX);
 	}
 
 	// Absolute modifiers from passive skills
 	if(pc->checkskill(sd,BS_HILTBINDING)>0)
-		bstatus->str++;
+		bstatus->str = cap_value(bstatus->str + 1, SHRT_MIN, SHRT_MAX);
 	if((skill_lv=pc->checkskill(sd,SA_DRAGONOLOGY))>0)
-		bstatus->int_ += (skill_lv+1)/2; // +1 INT / 2 lv
+		bstatus->int_ = cap_value(bstatus->int_ + (skill_lv + 1) / 2, SHRT_MIN, SHRT_MAX); // +1 INT / 2 lv
 	if((skill_lv=pc->checkskill(sd,AC_OWL))>0)
-		bstatus->dex += skill_lv;
+		bstatus->dex = cap_value(bstatus->dex + skill_lv, SHRT_MIN, SHRT_MAX);
 	if((skill_lv = pc->checkskill(sd,RA_RESEARCHTRAP))>0)
-		bstatus->int_ += skill_lv;
+		bstatus->int_ = cap_value(bstatus->int_ + skill_lv, SHRT_MIN, SHRT_MAX);
 	if ((pc->checkskill(sd,SU_POWEROFLAND)) > 0)
-		bstatus->int_ += 20;
+		bstatus->int_ = cap_value(bstatus->int_ + 20, SHRT_MIN, SHRT_MAX);
 
 	// Bonuses from cards and equipment as well as base stat, remember to avoid overflows.
 	i = bstatus->str + sd->status.str + sd->param_bonus[0] + sd->param_equip[0];
-	bstatus->str = cap_value(i,0,USHRT_MAX);
+	bstatus->str = cap_value(i, SHRT_MIN, SHRT_MAX);
 	i = bstatus->agi + sd->status.agi + sd->param_bonus[1] + sd->param_equip[1];
-	bstatus->agi = cap_value(i,0,USHRT_MAX);
+	bstatus->agi = cap_value(i, SHRT_MIN, SHRT_MAX);
 	i = bstatus->vit + sd->status.vit + sd->param_bonus[2] + sd->param_equip[2];
-	bstatus->vit = cap_value(i,0,USHRT_MAX);
+	bstatus->vit = cap_value(i, SHRT_MIN, SHRT_MAX);
 	i = bstatus->int_+ sd->status.int_+ sd->param_bonus[3] + sd->param_equip[3];
-	bstatus->int_ = cap_value(i,0,USHRT_MAX);
+	bstatus->int_ = cap_value(i, SHRT_MIN, SHRT_MAX);
 	i = bstatus->dex + sd->status.dex + sd->param_bonus[4] + sd->param_equip[4];
-	bstatus->dex = cap_value(i,0,USHRT_MAX);
+	bstatus->dex = cap_value(i, SHRT_MIN, SHRT_MAX);
 	i = bstatus->luk + sd->status.luk + sd->param_bonus[5] + sd->param_equip[5];
-	bstatus->luk = cap_value(i,0,USHRT_MAX);
+	bstatus->luk = cap_value(i, SHRT_MIN, SHRT_MAX);
 
 	// ------ BASE ATTACK CALCULATION ------
 
@@ -3218,12 +3224,12 @@ static int status_calc_npc_(struct npc_data *nd, enum e_status_calc_opt opt)
 		nstatus->speed = nd->speed;
 	}
 
-	nstatus->str = nd->stat_point;
-	nstatus->agi = nd->stat_point;
-	nstatus->vit = nd->stat_point;
-	nstatus->int_= nd->stat_point;
-	nstatus->dex = nd->stat_point;
-	nstatus->luk = nd->stat_point;
+	nstatus->str = cap_value(nd->stat_point, 0, SHRT_MAX);
+	nstatus->agi = cap_value(nd->stat_point, 0, SHRT_MAX);
+	nstatus->vit = cap_value(nd->stat_point, 0, SHRT_MAX);
+	nstatus->int_= cap_value(nd->stat_point, 0, SHRT_MAX);
+	nstatus->dex = cap_value(nd->stat_point, 0, SHRT_MAX);
+	nstatus->luk = cap_value(nd->stat_point, 0, SHRT_MAX);
 
 	status->calc_misc(&nd->bl, nstatus, nd->level);
 	status->copy(&nd->status, nstatus);
@@ -3241,12 +3247,12 @@ static int status_calc_homunculus_(struct homun_data *hd, enum e_status_calc_opt
 	nullpo_retr(1, hd);
 	hstatus = &hd->base_status;
 	hom = &hd->homunculus;
-	hstatus->str = hom->str / 10;
-	hstatus->agi = hom->agi / 10;
-	hstatus->vit = hom->vit / 10;
-	hstatus->dex = hom->dex / 10;
-	hstatus->int_ = hom->int_ / 10;
-	hstatus->luk = hom->luk / 10;
+	hstatus->str = cap_value(hom->str / 10, SHRT_MIN, SHRT_MAX);
+	hstatus->agi = cap_value(hom->agi / 10, SHRT_MIN, SHRT_MAX);
+	hstatus->vit = cap_value(hom->vit / 10, SHRT_MIN, SHRT_MAX);
+	hstatus->dex = cap_value(hom->dex / 10, SHRT_MIN, SHRT_MAX);
+	hstatus->int_ = cap_value(hom->int_ / 10, SHRT_MIN, SHRT_MAX);
+	hstatus->luk = cap_value(hom->luk / 10, SHRT_MIN, SHRT_MAX);
 
 	APPLY_HOMUN_LEVEL_STATWEIGHT();
 
@@ -3294,8 +3300,8 @@ static int status_calc_homunculus_(struct homun_data *hd, enum e_status_calc_opt
 		hstatus->def += skill_lv * 4;
 
 	if ( (skill_lv = homun->checkskill(hd, HVAN_INSTRUCT)) > 0 ) {
-		hstatus->int_ += 1 + skill_lv / 2 + skill_lv / 4 + skill_lv / 5;
-		hstatus->str += 1 + skill_lv / 3 + skill_lv / 3 + skill_lv / 4;
+		hstatus->int_ = cap_value(hstatus->int_ + 1 + skill_lv / 2 + skill_lv / 4 + skill_lv / 5, SHRT_MIN, SHRT_MAX);
+		hstatus->str = cap_value(hstatus->str + 1 + skill_lv / 3 + skill_lv / 3 + skill_lv / 4, SHRT_MIN, SHRT_MAX);
 	}
 
 	if ( (skill_lv = homun->checkskill(hd, HAMI_SKIN)) > 0 )
@@ -4429,16 +4435,16 @@ static void status_calc_misc(struct block_list *bl, struct status_data *st, int 
 /*==========================================
  * Apply shared stat mods from status changes [DracoRPG]
  *------------------------------------------*/
-static unsigned short status_calc_str(struct block_list *bl, struct status_change *sc, int str)
+static short status_calc_str(struct block_list *bl, struct status_change *sc, int str)
 {
 	if(!sc || !sc->count)
-		return cap_value(str,0,USHRT_MAX);
+		return cap_value(str, SHRT_MIN, SHRT_MAX);
 
 	if(sc->data[SC_FULL_THROTTLE])
 		str += str * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		str -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(str,0,USHRT_MAX);
+		return cap_value(str, SHRT_MIN, SHRT_MAX);
 	}
 	if(sc->data[SC_BEYOND_OF_WARCRY])
 		str += sc->data[SC_BEYOND_OF_WARCRY]->val3;
@@ -4489,19 +4495,19 @@ static unsigned short status_calc_str(struct block_list *bl, struct status_chang
 	if (sc->data[SC_STR_SCROLL])
 		str += sc->data[SC_STR_SCROLL]->val1;
 
-	return (unsigned short)cap_value(str,0,USHRT_MAX);
+	return cap_value(str, SHRT_MIN, SHRT_MAX);
 }
 
-static unsigned short status_calc_agi(struct block_list *bl, struct status_change *sc, int agi)
+static short status_calc_agi(struct block_list *bl, struct status_change *sc, int agi)
 {
 	if(!sc || !sc->count)
-		return cap_value(agi,0,USHRT_MAX);
+		return cap_value(agi, SHRT_MIN, SHRT_MAX);
 
 	if(sc->data[SC_FULL_THROTTLE])
 		agi += agi * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		agi -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(agi,0,USHRT_MAX);
+		return cap_value(agi, SHRT_MIN, SHRT_MAX);
 	}
 	if(sc->data[SC_CONCENTRATION] && !sc->data[SC_QUAGMIRE])
 		agi += (agi-sc->data[SC_CONCENTRATION]->val3)*sc->data[SC_CONCENTRATION]->val2/100;
@@ -4552,19 +4558,19 @@ static unsigned short status_calc_agi(struct block_list *bl, struct status_chang
 	if (sc->data[SC_ARCLOUSEDASH])
 		agi += sc->data[SC_ARCLOUSEDASH]->val2;
 
-	return (unsigned short)cap_value(agi,0,USHRT_MAX);
+	return cap_value(agi, SHRT_MIN, SHRT_MAX);
 }
 
-static unsigned short status_calc_vit(struct block_list *bl, struct status_change *sc, int vit)
+static short status_calc_vit(struct block_list *bl, struct status_change *sc, int vit)
 {
 	if(!sc || !sc->count)
-		return cap_value(vit,0,USHRT_MAX);
+		return cap_value(vit, SHRT_MIN, SHRT_MAX);
 
 	if(sc->data[SC_FULL_THROTTLE])
 		vit += vit * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		vit -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(vit,0,USHRT_MAX);
+		return cap_value(vit, SHRT_MIN, SHRT_MAX);
 	}
 	if(sc->data[SC_INCALLSTATUS])
 		vit += sc->data[SC_INCALLSTATUS]->val1;
@@ -4603,20 +4609,20 @@ static unsigned short status_calc_vit(struct block_list *bl, struct status_chang
 	if (sc->data[SC_2011RWC])
 		vit += sc->data[SC_2011RWC]->val1;
 
-	return (unsigned short)cap_value(vit,0,USHRT_MAX);
+	return cap_value(vit, SHRT_MIN, SHRT_MAX);
 }
 
-static unsigned short status_calc_int(struct block_list *bl, struct status_change *sc, int int_)
+static short status_calc_int(struct block_list *bl, struct status_change *sc, int int_)
 {
 	nullpo_ret(bl);
 	if(!sc || !sc->count)
-		return cap_value(int_,0,USHRT_MAX);
+		return cap_value(int_, SHRT_MIN, SHRT_MAX);
 
 	if(sc->data[SC_FULL_THROTTLE])
 		int_ += int_ * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		int_ -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(int_,0,USHRT_MAX);
+		return cap_value(int_, SHRT_MIN, SHRT_MAX);
 	}
 	if(sc->data[SC_MELODYOFSINK])
 		int_ -= sc->data[SC_MELODYOFSINK]->val3;
@@ -4670,20 +4676,20 @@ static unsigned short status_calc_int(struct block_list *bl, struct status_chang
 			int_ -= int_ * sc->data[SC__STRIPACCESSARY]->val2 / 100;
 	}
 
-	return (unsigned short)cap_value(int_,0,USHRT_MAX);
+	return cap_value(int_, SHRT_MIN, SHRT_MAX);
 }
 
-static unsigned short status_calc_dex(struct block_list *bl, struct status_change *sc, int dex)
+static short status_calc_dex(struct block_list *bl, struct status_change *sc, int dex)
 {
 	nullpo_ret(bl);
 	if(!sc || !sc->count)
-		return cap_value(dex,0,USHRT_MAX);
+		return cap_value(dex, SHRT_MIN, SHRT_MAX);
 
 	if(sc->data[SC_FULL_THROTTLE])
 		dex += dex * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		dex -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(dex,0,USHRT_MAX);
+		return cap_value(dex, SHRT_MIN, SHRT_MAX);
 	}
 	if(sc->data[SC_CONCENTRATION] && !sc->data[SC_QUAGMIRE])
 		dex += (dex-sc->data[SC_CONCENTRATION]->val4)*sc->data[SC_CONCENTRATION]->val2/100;
@@ -4733,21 +4739,21 @@ static unsigned short status_calc_dex(struct block_list *bl, struct status_chang
 	if(sc->data[SC__STRIPACCESSARY] && bl->type != BL_PC)
 		dex -= dex * sc->data[SC__STRIPACCESSARY]->val2 / 100;
 
-	return (unsigned short)cap_value(dex,0,USHRT_MAX);
+	return cap_value(dex, SHRT_MIN, SHRT_MAX);
 }
 
-static unsigned short status_calc_luk(struct block_list *bl, struct status_change *sc, int luk)
+static short status_calc_luk(struct block_list *bl, struct status_change *sc, int luk)
 {
 	nullpo_ret(bl);
 
 	if (!sc || !sc->count)
-		return cap_value(luk, 0, USHRT_MAX);
+		return cap_value(luk, SHRT_MIN, SHRT_MAX);
 
 	if (sc->data[SC_FULL_THROTTLE])
 		luk += luk * 20 / 100;
 	if (sc->data[SC_HARMONIZE]) {
 		luk -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(luk, 0, USHRT_MAX);
+		return cap_value(luk, SHRT_MIN, SHRT_MAX);
 	}
 	if (sc->data[SC_CURSE])
 		return 0;
@@ -4788,7 +4794,7 @@ static unsigned short status_calc_luk(struct block_list *bl, struct status_chang
 	if (sc->data[SC_MYSTICPOWDER])
 		luk += sc->data[SC_MYSTICPOWDER]->val2;
 
-	return (unsigned short)cap_value(luk, 0, USHRT_MAX);
+	return cap_value(luk, SHRT_MIN, SHRT_MAX);
 }
 
 static int status_calc_batk(struct block_list *bl, struct status_change *sc, int batk, bool viewable)

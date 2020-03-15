@@ -1352,12 +1352,12 @@ struct status_interface {
 	unsigned int (*get_restart_hp) (const struct map_session_data *sd, const struct status_data *st);
 	unsigned int (*get_restart_sp) (const struct map_session_data *sd, const struct status_data *st);
 	int (*calc_npc_) (struct npc_data *nd, enum e_status_calc_opt opt);
-	unsigned short (*calc_str) (struct block_list *bl, struct status_change *sc, int str);
-	unsigned short (*calc_agi) (struct block_list *bl, struct status_change *sc, int agi);
-	unsigned short (*calc_vit) (struct block_list *bl, struct status_change *sc, int vit);
-	unsigned short (*calc_int) (struct block_list *bl, struct status_change *sc, int int_);
-	unsigned short (*calc_dex) (struct block_list *bl, struct status_change *sc, int dex);
-	unsigned short (*calc_luk) (struct block_list *bl, struct status_change *sc, int luk);
+	short (*calc_str) (struct block_list *bl, struct status_change *sc, int str);
+	short (*calc_agi) (struct block_list *bl, struct status_change *sc, int agi);
+	short (*calc_vit) (struct block_list *bl, struct status_change *sc, int vit);
+	short (*calc_int) (struct block_list *bl, struct status_change *sc, int int_);
+	short (*calc_dex) (struct block_list *bl, struct status_change *sc, int dex);
+	short (*calc_luk) (struct block_list *bl, struct status_change *sc, int luk);
 	int (*calc_watk) (struct block_list *bl, struct status_change *sc, int watk, bool viewable);
 	int (*calc_matk) (struct block_list *bl, struct status_change *sc, int matk, bool viewable);
 	signed int (*calc_hit) (struct block_list *bl, struct status_change *sc, int hit, bool viewable);

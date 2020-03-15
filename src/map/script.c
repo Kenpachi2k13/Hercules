@@ -19763,27 +19763,27 @@ static BUILDIN(setunitdata)
 			md->ud.canmove_tick = val;
 			break;
 		case UDT_STR:
-			md->status.str = (unsigned short) val;
+			md->status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_AGI:
-			md->status.agi = (unsigned short) val;
+			md->status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_VIT:
-			md->status.vit = (unsigned short) val;
+			md->status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_INT:
-			md->status.int_ = (unsigned short) val;
+			md->status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_DEX:
-			md->status.dex = (unsigned short) val;
+			md->status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_LUK:
-			md->status.luk = (unsigned short) val;
+			md->status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &md->status, md->level);
 			break;
 		case UDT_ATKRANGE:
@@ -19895,27 +19895,27 @@ static BUILDIN(setunitdata)
 			hd->ud.canmove_tick = val;
 			break;
 		case UDT_STR:
-			hd->base_status.str = (unsigned short) val;
+			hd->base_status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_AGI:
-			hd->base_status.agi = (unsigned short) val;
+			hd->base_status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_VIT:
-			hd->base_status.vit = (unsigned short) val;
+			hd->base_status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_INT:
-			hd->base_status.int_ = (unsigned short) val;
+			hd->base_status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_DEX:
-			hd->base_status.dex = (unsigned short) val;
+			hd->base_status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_LUK:
-			hd->base_status.luk = (unsigned short) val;
+			hd->base_status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &hd->base_status, hd->homunculus.level);
 			break;
 		case UDT_ATKRANGE:
@@ -20034,27 +20034,27 @@ static BUILDIN(setunitdata)
 			pd->ud.canmove_tick = val;
 			break;
 		case UDT_STR:
-			pd->status.str = (unsigned short) val;
+			pd->status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_AGI:
-			pd->status.agi = (unsigned short) val;
+			pd->status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_VIT:
-			pd->status.vit = (unsigned short) val;
+			pd->status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_INT:
-			pd->status.int_ = (unsigned short) val;
+			pd->status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_DEX:
-			pd->status.dex = (unsigned short) val;
+			pd->status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_LUK:
-			pd->status.luk = (unsigned short) val;
+			pd->status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &pd->status, pd->pet.level);
 			break;
 		case UDT_ATKRANGE:
@@ -20167,27 +20167,27 @@ static BUILDIN(setunitdata)
 			mc->ud.canmove_tick = val;
 			break;
 		case UDT_STR:
-			mc->base_status.str = (unsigned short) val;
+			mc->base_status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_AGI:
-			mc->base_status.agi = (unsigned short) val;
+			mc->base_status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_VIT:
-			mc->base_status.vit = (unsigned short) val;
+			mc->base_status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_INT:
-			mc->base_status.int_ = (unsigned short) val;
+			mc->base_status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_DEX:
-			mc->base_status.dex = (unsigned short) val;
+			mc->base_status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_LUK:
-			mc->base_status.luk = (unsigned short) val;
+			mc->base_status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &mc->base_status, mc->db->lv);
 			break;
 		case UDT_ATKRANGE:
@@ -20301,27 +20301,27 @@ static BUILDIN(setunitdata)
 			ed->ud.canmove_tick = val;
 			break;
 		case UDT_STR:
-			ed->base_status.str = (unsigned short) val;
+			ed->base_status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_AGI:
-			ed->base_status.agi = (unsigned short) val;
+			ed->base_status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_VIT:
-			ed->base_status.vit = (unsigned short) val;
+			ed->base_status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_INT:
-			ed->base_status.int_ = (unsigned short) val;
+			ed->base_status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_DEX:
-			ed->base_status.dex = (unsigned short) val;
+			ed->base_status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_LUK:
-			ed->base_status.luk = (unsigned short) val;
+			ed->base_status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &ed->base_status, ed->db->lv);
 			break;
 		case UDT_ATKRANGE:
@@ -20430,27 +20430,27 @@ static BUILDIN(setunitdata)
 			unit->set_dir(bl, (enum unit_dir)val);
 			break;
 		case UDT_STR:
-			nd->status.str = (unsigned short) val;
+			nd->status.str = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_AGI:
-			nd->status.agi = (unsigned short) val;
+			nd->status.agi = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_VIT:
-			nd->status.vit = (unsigned short) val;
+			nd->status.vit = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_INT:
-			nd->status.int_ = (unsigned short) val;
+			nd->status.int_ = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_DEX:
-			nd->status.dex = (unsigned short) val;
+			nd->status.dex = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_LUK:
-			nd->status.luk = (unsigned short) val;
+			nd->status.luk = cap_value(val, SHRT_MIN, SHRT_MAX);
 			status->calc_misc(bl, &nd->status, nd->level);
 			break;
 		case UDT_STATPOINT:
