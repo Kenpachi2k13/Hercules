@@ -605,22 +605,22 @@ int mobdb2sql_sub(struct config_setting_t *mobt, int n, const char *source)
 		StrBuf->Printf(&buf, "%d,", md->status.mdef);
 
 		// STR
-		StrBuf->Printf(&buf, "%u,", md->status.str);
+		StrBuf->Printf(&buf, "%d,", md->status.str);
 
 		// AGI
-		StrBuf->Printf(&buf, "%u,", md->status.agi);
+		StrBuf->Printf(&buf, "%d,", md->status.agi);
 
 		// VIT
-		StrBuf->Printf(&buf, "%u,", md->status.vit);
+		StrBuf->Printf(&buf, "%d,", md->status.vit);
 
 		// INT
-		StrBuf->Printf(&buf, "%u,", md->status.int_);
+		StrBuf->Printf(&buf, "%d,", md->status.int_);
 
 		// DEX
-		StrBuf->Printf(&buf, "%u,", md->status.dex);
+		StrBuf->Printf(&buf, "%d,", md->status.dex);
 
 		// LUK
-		StrBuf->Printf(&buf, "%u,", md->status.luk);
+		StrBuf->Printf(&buf, "%d,", md->status.luk);
 
 		// Range2
 		StrBuf->Printf(&buf, "%d,", md->range2);
