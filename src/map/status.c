@@ -2656,18 +2656,12 @@ static int status_calc_pc_(struct map_session_data *sd, enum e_status_calc_opt o
 		bstatus->int_ += 20;
 
 	// Bonuses from cards and equipment as well as base stat, remember to avoid overflows.
-	i = bstatus->str + sd->status.str + sd->param_bonus[0] + sd->param_equip[0];
-	bstatus->str = cap_value(i,0,USHRT_MAX);
-	i = bstatus->agi + sd->status.agi + sd->param_bonus[1] + sd->param_equip[1];
-	bstatus->agi = cap_value(i,0,USHRT_MAX);
-	i = bstatus->vit + sd->status.vit + sd->param_bonus[2] + sd->param_equip[2];
-	bstatus->vit = cap_value(i,0,USHRT_MAX);
-	i = bstatus->int_+ sd->status.int_+ sd->param_bonus[3] + sd->param_equip[3];
-	bstatus->int_ = cap_value(i,0,USHRT_MAX);
-	i = bstatus->dex + sd->status.dex + sd->param_bonus[4] + sd->param_equip[4];
-	bstatus->dex = cap_value(i,0,USHRT_MAX);
-	i = bstatus->luk + sd->status.luk + sd->param_bonus[5] + sd->param_equip[5];
-	bstatus->luk = cap_value(i,0,USHRT_MAX);
+	bstatus->str += sd->status.str + sd->param_bonus[0] + sd->param_equip[0];
+	bstatus->agi += sd->status.agi + sd->param_bonus[1] + sd->param_equip[1];
+	bstatus->vit += sd->status.vit + sd->param_bonus[2] + sd->param_equip[2];
+	bstatus->int_ += sd->status.int_+ sd->param_bonus[3] + sd->param_equip[3];
+	bstatus->dex += sd->status.dex + sd->param_bonus[4] + sd->param_equip[4];
+	bstatus->luk += sd->status.luk + sd->param_bonus[5] + sd->param_equip[5];
 
 	// ------ BASE ATTACK CALCULATION ------
 
@@ -4455,13 +4449,13 @@ static void status_calc_misc(struct block_list *bl, struct status_data *st, int 
 static unsigned short status_calc_str(struct block_list *bl, struct status_change *sc, int str)
 {
 	if(!sc || !sc->count)
-		return cap_value(str,0,USHRT_MAX);
+		return str;
 
 	if(sc->data[SC_FULL_THROTTLE])
 		str += str * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		str -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(str,0,USHRT_MAX);
+		return str;
 	}
 	if(sc->data[SC_BEYOND_OF_WARCRY])
 		str += sc->data[SC_BEYOND_OF_WARCRY]->val3;
@@ -4512,19 +4506,19 @@ static unsigned short status_calc_str(struct block_list *bl, struct status_chang
 	if (sc->data[SC_STR_SCROLL])
 		str += sc->data[SC_STR_SCROLL]->val1;
 
-	return (unsigned short)cap_value(str,0,USHRT_MAX);
+	return str;
 }
 
 static unsigned short status_calc_agi(struct block_list *bl, struct status_change *sc, int agi)
 {
 	if(!sc || !sc->count)
-		return cap_value(agi,0,USHRT_MAX);
+		return agi;
 
 	if(sc->data[SC_FULL_THROTTLE])
 		agi += agi * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		agi -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(agi,0,USHRT_MAX);
+		return agi;
 	}
 	if(sc->data[SC_CONCENTRATION] && !sc->data[SC_QUAGMIRE])
 		agi += (agi-sc->data[SC_CONCENTRATION]->val3)*sc->data[SC_CONCENTRATION]->val2/100;
@@ -4575,19 +4569,19 @@ static unsigned short status_calc_agi(struct block_list *bl, struct status_chang
 	if (sc->data[SC_ARCLOUSEDASH])
 		agi += sc->data[SC_ARCLOUSEDASH]->val2;
 
-	return (unsigned short)cap_value(agi,0,USHRT_MAX);
+	return agi;
 }
 
 static unsigned short status_calc_vit(struct block_list *bl, struct status_change *sc, int vit)
 {
 	if(!sc || !sc->count)
-		return cap_value(vit,0,USHRT_MAX);
+		return vit;
 
 	if(sc->data[SC_FULL_THROTTLE])
 		vit += vit * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		vit -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(vit,0,USHRT_MAX);
+		return vit;
 	}
 	if(sc->data[SC_INCALLSTATUS])
 		vit += sc->data[SC_INCALLSTATUS]->val1;
@@ -4626,20 +4620,20 @@ static unsigned short status_calc_vit(struct block_list *bl, struct status_chang
 	if (sc->data[SC_2011RWC])
 		vit += sc->data[SC_2011RWC]->val1;
 
-	return (unsigned short)cap_value(vit,0,USHRT_MAX);
+	return vit;
 }
 
 static unsigned short status_calc_int(struct block_list *bl, struct status_change *sc, int int_)
 {
 	nullpo_ret(bl);
 	if(!sc || !sc->count)
-		return cap_value(int_,0,USHRT_MAX);
+		return int_;
 
 	if(sc->data[SC_FULL_THROTTLE])
 		int_ += int_ * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		int_ -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(int_,0,USHRT_MAX);
+		return int_;
 	}
 	if(sc->data[SC_MELODYOFSINK])
 		int_ -= sc->data[SC_MELODYOFSINK]->val3;
@@ -4693,20 +4687,20 @@ static unsigned short status_calc_int(struct block_list *bl, struct status_chang
 			int_ -= int_ * sc->data[SC__STRIPACCESSARY]->val2 / 100;
 	}
 
-	return (unsigned short)cap_value(int_,0,USHRT_MAX);
+	return int_;
 }
 
 static unsigned short status_calc_dex(struct block_list *bl, struct status_change *sc, int dex)
 {
 	nullpo_ret(bl);
 	if(!sc || !sc->count)
-		return cap_value(dex,0,USHRT_MAX);
+		return dex;
 
 	if(sc->data[SC_FULL_THROTTLE])
 		dex += dex * 20 / 100;
 	if(sc->data[SC_HARMONIZE]) {
 		dex -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(dex,0,USHRT_MAX);
+		return dex;
 	}
 	if(sc->data[SC_CONCENTRATION] && !sc->data[SC_QUAGMIRE])
 		dex += (dex-sc->data[SC_CONCENTRATION]->val4)*sc->data[SC_CONCENTRATION]->val2/100;
@@ -4756,7 +4750,7 @@ static unsigned short status_calc_dex(struct block_list *bl, struct status_chang
 	if(sc->data[SC__STRIPACCESSARY] && bl->type != BL_PC)
 		dex -= dex * sc->data[SC__STRIPACCESSARY]->val2 / 100;
 
-	return (unsigned short)cap_value(dex,0,USHRT_MAX);
+	return dex;
 }
 
 static unsigned short status_calc_luk(struct block_list *bl, struct status_change *sc, int luk)
@@ -4764,13 +4758,13 @@ static unsigned short status_calc_luk(struct block_list *bl, struct status_chang
 	nullpo_ret(bl);
 
 	if (!sc || !sc->count)
-		return cap_value(luk, 0, USHRT_MAX);
+		return luk;
 
 	if (sc->data[SC_FULL_THROTTLE])
 		luk += luk * 20 / 100;
 	if (sc->data[SC_HARMONIZE]) {
 		luk -= sc->data[SC_HARMONIZE]->val2;
-		return (unsigned short)cap_value(luk, 0, USHRT_MAX);
+		return luk;
 	}
 	if (sc->data[SC_CURSE])
 		return 0;
@@ -4811,7 +4805,7 @@ static unsigned short status_calc_luk(struct block_list *bl, struct status_chang
 	if (sc->data[SC_MYSTICPOWDER])
 		luk += sc->data[SC_MYSTICPOWDER]->val2;
 
-	return (unsigned short)cap_value(luk, 0, USHRT_MAX);
+	return luk;
 }
 
 static int status_calc_batk(struct block_list *bl, struct status_change *sc, int batk, bool viewable)

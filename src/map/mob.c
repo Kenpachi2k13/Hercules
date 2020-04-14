@@ -4300,23 +4300,23 @@ static void mob_read_db_stats_sub(struct mob_db *entry, struct config_setting_t 
 {
 	int i32;
 	nullpo_retv(entry);
-	if (mob->lookup_const(t, "Str", &i32) && i32 >= 0) {
-		entry->status.str = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Str", &i32)) {
+		entry->status.str = i32;
 	}
-	if (mob->lookup_const(t, "Agi", &i32) && i32 >= 0) {
-		entry->status.agi = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Agi", &i32)) {
+		entry->status.agi = i32;
 	}
-	if (mob->lookup_const(t, "Vit", &i32) && i32 >= 0) {
-		entry->status.vit = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Vit", &i32)) {
+		entry->status.vit = i32;
 	}
-	if (mob->lookup_const(t, "Int", &i32) && i32 >= 0) {
-		entry->status.int_ = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Int", &i32)) {
+		entry->status.int_ = i32;
 	}
-	if (mob->lookup_const(t, "Dex", &i32) && i32 >= 0) {
-		entry->status.dex = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Dex", &i32)) {
+		entry->status.dex = i32;
 	}
-	if (mob->lookup_const(t, "Luk", &i32) && i32 >= 0) {
-		entry->status.luk = mob_parse_dbrow_cap_value(entry->mob_id, UINT16_MIN, UINT16_MAX, i32);
+	if (mob->lookup_const(t, "Luk", &i32)) {
+		entry->status.luk = i32;
 	}
 }
 
@@ -4968,9 +4968,13 @@ static int mob_read_db_sub(struct config_setting_t *mobt, int n, const char *sou
 	if ((t = libconfig->setting_get_member(mobt, "Stats"))) {
 		if (config_setting_is_group(t)) {
 			mob->read_db_stats_sub(&md, t);
-		} else if (mob->lookup_const(mobt, "Stats", &i32) && i32 >= 0) {
-			md.status.str = md.status.agi = md.status.vit = md.status.int_ = md.status.dex = md.status.luk =
-				mob_parse_dbrow_cap_value(md.mob_id, UINT16_MIN, UINT16_MAX, i32);
+		} else if (mob->lookup_const(mobt, "Stats", &i32)) {
+			md.status.str = i32;
+			md.status.agi = i32;
+			md.status.vit = i32;
+			md.status.int_ = i32;
+			md.status.dex = i32;
+			md.status.luk = i32;
 		}
 	}
 
