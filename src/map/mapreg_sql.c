@@ -105,6 +105,28 @@ static bool mapreg_setreg(int64 uid, int val)
 				SQL->EscapeStringLen(map->mysql_handle, tmp_str, name, strnlen(name, SCRIPT_VARNAME_LENGTH+1));
 				if( SQL_ERROR == SQL->Query(map->mysql_handle, "INSERT INTO `%s`(`varname`,`index`,`value`) VALUES ('%s','%u','%d')", mapreg->table, tmp_str, i, val) )
 					Sql_ShowDebug(map->mysql_handle);
+				
+				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+				if (stmt == NULL) {
+					SqlStmt_ShowDebug(stmt);
+				} else {
+					const char *query = "INSERT INTO `%s` (`key`, `index`, `value`) VALUES (?, ?, ?)";
+					char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+					safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
+					size_t len = strnlen(name_plain, sizeof(name_plain));
+
+					if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_INT32, &val, sizeof(val))
+					    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+						SqlStmt_ShowDebug(stmt);
+						SQL->StmtFree(stmt);
+					}
+
+					SQL->StmtFree(stmt);
+				}
 			}
 			i64db_put(mapreg->regs.vars, uid, m);
 		}
@@ -119,6 +141,27 @@ static bool mapreg_setreg(int64 uid, int val)
 		if( name[1] != '@' ) {// Remove from database because it is unused.
 			if( SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%u'", mapreg->table, name, i) )
 				Sql_ShowDebug(map->mysql_handle);
+				
+			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+			if (stmt == NULL) {
+				SqlStmt_ShowDebug(stmt);
+			} else {
+				const char *query = "DELETE FROM `%s` WHERE `key`=? AND `index`=?";
+				char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+				safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
+				size_t len = strnlen(name_plain, sizeof(name_plain));
+
+				if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
+				    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+					SqlStmt_ShowDebug(stmt);
+					SQL->StmtFree(stmt);
+				}
+
+				SQL->StmtFree(stmt);
+			}
 		}
 	}
 
@@ -147,6 +190,27 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 		if(name[1] != '@') {
 			if (SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%u'", mapreg->table, name, i))
 				Sql_ShowDebug(map->mysql_handle);
+				
+			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+			if (stmt == NULL) {
+				SqlStmt_ShowDebug(stmt);
+			} else {
+				const char *query = "DELETE FROM `%s` WHERE `key`=? AND `index`=?";
+				char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+				safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
+				size_t len = strnlen(name_plain, sizeof(name_plain));
+
+				if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
+				    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+					SqlStmt_ShowDebug(stmt);
+					SQL->StmtFree(stmt);
+				}
+
+				SQL->StmtFree(stmt);
+			}
 		}
 		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
 			if( m->u.str != NULL )
@@ -181,12 +245,133 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 				SQL->EscapeStringLen(map->mysql_handle, tmp_str2, str, strnlen(str, 255));
 				if( SQL_ERROR == SQL->Query(map->mysql_handle, "INSERT INTO `%s`(`varname`,`index`,`value`) VALUES ('%s','%u','%s')", mapreg->table, tmp_str, i, tmp_str2) )
 					Sql_ShowDebug(map->mysql_handle);
+				
+				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+				if (stmt == NULL) {
+					SqlStmt_ShowDebug(stmt);
+				} else {
+					const char *query = "INSERT INTO `%s` (`key`, `index`, `value`) VALUES (?, ?, ?)";
+					char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+					char value[256];
+					safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1) - 1);
+					safestrncpy(value, str, strnlen(str, 255) + 1);
+					size_t len_n = strnlen(name_plain, sizeof(name_plain));
+					size_t len_v = strnlen(value, sizeof(value));
+
+					if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len_n)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_STRING, &value, len_v)
+					    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+						SqlStmt_ShowDebug(stmt);
+						SQL->StmtFree(stmt);
+					}
+
+					SQL->StmtFree(stmt);
+				}
 			}
 			i64db_put(mapreg->regs.vars, uid, m);
 		}
 	}
 
 	return true;
+}
+
+/**
+ * Loads permanent interger variables from the database.
+ *
+ **/
+static void mapreg_load_num_db(void)
+{
+	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+	if (stmt == NULL) {
+		SqlStmt_ShowDebug(stmt);
+		return;
+	}
+
+	const char *query = "SELECT CONCAT('$', `key`), `index`, `value` FROM `%s`";
+	char name[SCRIPT_VARNAME_LENGTH + 1];
+	unsigned int index;
+	int value;
+
+	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
+	    || SQL_ERROR == SQL->StmtExecute(stmt)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 0, SQLDT_STRING, &name, sizeof(name), NULL, NULL)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 1, SQLDT_UINT32, &index, sizeof(index), NULL, NULL)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 2, SQLDT_INT32, &value, sizeof(value), NULL, NULL)) {
+		SqlStmt_ShowDebug(stmt);
+		SQL->StmtFree(stmt);
+		return;
+	}
+
+	if (SQL->StmtNumRows(stmt) < 1) {
+		SQL->StmtFree(stmt);
+		return;
+	}
+
+	while (SQL_SUCCESS == SQL->StmtNextRow(stmt)) {
+		int var_key = script->add_variable(name);
+		int64 uid = reference_uid(var_key, index);
+
+		if (i64db_exists(mapreg->regs.vars, uid)) {
+			ShowWarning("mapreg_load_num_db: Duplicate! '%s' => '%d' Skipping...\n", name, value);
+			continue;
+		}
+
+		mapreg->setreg(uid, value);
+	}
+
+	SQL->StmtFree(stmt);
+}
+
+/**
+ * Loads permanent string variables from the database.
+ *
+ **/
+static void mapreg_load_str_db(void)
+{
+	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+	if (stmt == NULL) {
+		SqlStmt_ShowDebug(stmt);
+		return;
+	}
+
+	const char *query = "SELECT CONCAT('$', `key`, '$'), `index`, `value` FROM `%s`";
+	char name[SCRIPT_VARNAME_LENGTH + 1];
+	unsigned int index;
+	char value[256];
+
+	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
+	    || SQL_ERROR == SQL->StmtExecute(stmt)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 0, SQLDT_STRING, &name, sizeof(name), NULL, NULL)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 1, SQLDT_UINT32, &index, sizeof(index), NULL, NULL)
+	    || SQL_ERROR == SQL->StmtBindColumn(stmt, 2, SQLDT_STRING, &value, sizeof(value), NULL, NULL)) {
+		SqlStmt_ShowDebug(stmt);
+		SQL->StmtFree(stmt);
+		return;
+	}
+
+	if (SQL->StmtNumRows(stmt) < 1) {
+		SQL->StmtFree(stmt);
+		return;
+	}
+
+	while (SQL_SUCCESS == SQL->StmtNextRow(stmt)) {
+		int var_key = script->add_variable(name);
+		int64 uid = reference_uid(var_key, index);
+
+		if (i64db_exists(mapreg->regs.vars, uid)) {
+			ShowWarning("mapreg_load_str_db: Duplicate! '%s' => '%s' Skipping...\n", name, value);
+			continue;
+		}
+
+		mapreg->setregstr(uid, value);
+	}
+
+	SQL->StmtFree(stmt);
 }
 
 /**
@@ -238,9 +423,88 @@ static void script_load_mapreg(void)
 
 	SQL->StmtFree(stmt);
 
+	mapreg->load_num_db();
+	mapreg->load_str_db();
+
 	mapreg->skip_insert = false;
 
 	mapreg->dirty = false;
+}
+
+/**
+ * Saves a permanent integer variable to the database.
+ *
+ * @param name The variable's name.
+ * @param idx The variable's array index.
+ * @param val The variable's value.
+ *
+ **/
+static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
+{
+	nullpo_retv(name);
+
+	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+	if (stmt == NULL) {
+		SqlStmt_ShowDebug(stmt);
+		return;
+	}
+
+	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
+	char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+	safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
+	size_t len = strnlen(name_plain, sizeof(name_plain));
+
+	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_INT32, &val, sizeof(val))
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, &name_plain, len)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
+	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+		SqlStmt_ShowDebug(stmt);
+		SQL->StmtFree(stmt);
+	}
+
+	SQL->StmtFree(stmt);
+}
+
+/**
+ * Saves a permanent string variable to the database.
+ *
+ * @param name The variable's name.
+ * @param idx The variable's array index.
+ * @param val The variable's value.
+ *
+ **/
+static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
+{
+	nullpo_retv(name);
+	nullpo_retv(val);
+
+	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+
+	if (stmt == NULL) {
+		SqlStmt_ShowDebug(stmt);
+		return;
+	}
+
+	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
+	char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+	char value[256];
+	safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1) - 1);
+	safestrncpy(value, val, strnlen(val, 255) + 1);
+	size_t len_n = strnlen(name_plain, sizeof(name_plain));
+	size_t len_v = strnlen(value, sizeof(value));
+
+	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &value, len_v)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, &name_plain, len_n)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
+	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
+		SqlStmt_ShowDebug(stmt);
+		SQL->StmtFree(stmt);
+	}
+
+	SQL->StmtFree(stmt);
 }
 
 /**
@@ -260,11 +524,15 @@ static void script_save_mapreg(void)
 				if (!m->is_string) {
 					if( SQL_ERROR == SQL->Query(map->mysql_handle, "UPDATE `%s` SET `value`='%d' WHERE `varname`='%s' AND `index`='%d' LIMIT 1", mapreg->table, m->u.i, name, i) )
 						Sql_ShowDebug(map->mysql_handle);
+
+					mapreg->save_num_db(name, i, m->u.i);
 				} else {
 					char tmp_str2[2*255+1];
 					SQL->EscapeStringLen(map->mysql_handle, tmp_str2, m->u.str, safestrnlen(m->u.str, 255));
 					if( SQL_ERROR == SQL->Query(map->mysql_handle, "UPDATE `%s` SET `value`='%s' WHERE `varname`='%s' AND `index`='%d' LIMIT 1", mapreg->table, tmp_str2, name, i) )
 						Sql_ShowDebug(map->mysql_handle);
+
+					mapreg->save_str_db(name, i, m->u.str);
 				}
 				m->save = false;
 			}
@@ -442,7 +710,11 @@ void mapreg_defaults(void)
 	mapreg->readregstr = mapreg_readregstr;
 	mapreg->setreg = mapreg_setreg;
 	mapreg->setregstr = mapreg_setregstr;
+	mapreg->load_num_db = mapreg_load_num_db;
+	mapreg->load_str_db = mapreg_load_str_db;
 	mapreg->load = script_load_mapreg;
+	mapreg->save_num_db = mapreg_save_num_db;
+	mapreg->save_str_db = mapreg_save_str_db;
 	mapreg->save = script_save_mapreg;
 	mapreg->save_timer = script_autosave_mapreg;
 	mapreg->destroyreg = mapreg_destroyreg;
