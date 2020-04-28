@@ -953,6 +953,7 @@ INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588050480); -- 2020-04-2
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588055940); -- 2020-04-28--08-39.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588061880); -- 2020-04-28--10-18.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588062600); -- 2020-04-28--10-30.sql
+INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588063860); -- 2020-04-28--10-51.sql
 
 --
 -- Table structure for table `storage`
