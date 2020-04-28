@@ -358,6 +358,42 @@ static void mapreg_init(void)
 }
 
 /**
+ * Loads the mapreg database table names from configuration file.
+ *
+ * @param filename Path to configuration file. (Used in error and warning messages).
+ * @param config The current config being parsed.
+ * @param imported Whether the current config is imported from another file.
+ * @return false on failure, true on success.
+ *
+ **/
+static bool mapreg_config_read_registry(const char *filename, const struct config_setting_t *config, bool imported)
+{
+	nullpo_retr(false, filename);
+	nullpo_retr(false, config);
+
+	size_t sz = sizeof(mapreg->num_db);
+	int result = libconfig->setting_lookup_mutable_string(config, "map_reg_num_db", mapreg->num_db, sz);
+	bool ret_val = true;
+
+	if (result != CONFIG_TRUE && !imported) {
+		ShowError("mapreg_config_read_registry: inter_configuration/database_names/registry/map_reg_num_db was not found in %s!\n",
+			  filename);
+		ret_val = false;
+	}
+
+	sz = sizeof(mapreg->str_db);
+	result = libconfig->setting_lookup_mutable_string(config, "map_reg_str_db", mapreg->str_db, sz);
+
+	if (result != CONFIG_TRUE && !imported) {
+		ShowError("mapreg_config_read_registry: inter_configuration/database_names/registry/map_reg_str_db was not found in %s!\n",
+			  filename);
+		ret_val = false;
+	}
+
+	return ret_val;
+}
+
+/**
  * Loads the mapreg configuration file.
  *
  * @param filename Path to configuration file (used in error and warning messages).
@@ -390,6 +426,8 @@ void mapreg_defaults(void)
 	mapreg->skip_insert = false;
 
 	safestrncpy(mapreg->table, "mapreg", sizeof(mapreg->table));
+	safestrncpy(mapreg->num_db, "map_reg_num_db", sizeof(mapreg->num_db));
+	safestrncpy(mapreg->str_db, "map_reg_str_db", sizeof(mapreg->str_db));
 	mapreg->dirty = false;
 
 	/* */
@@ -409,6 +447,7 @@ void mapreg_defaults(void)
 	mapreg->save_timer = script_autosave_mapreg;
 	mapreg->destroyreg = mapreg_destroyreg;
 	mapreg->reload = mapreg_reload;
+	mapreg->config_read_registry = mapreg_config_read_registry;
 	mapreg->config_read = mapreg_config_read;
 
 }
