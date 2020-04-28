@@ -606,12 +606,15 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 		}
 	} else { /* char reg */
 		if( is_string ) {
+			char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+			safestrncpy(name_plain, key, strnlen(key, SCRIPT_VARNAME_LENGTH + 1));
+
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, key, index, val_esq) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, name_plain, index, val_esq) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, key, index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, name_plain, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {
@@ -635,7 +638,7 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 
 	switch( type ) {
 		case 3: //char reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `char_id`='%d'", char_reg_str_db, char_id) )
+			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT(`key`, '$'), `index`, `value` FROM `%s` WHERE `char_id`='%d'", char_reg_str_db, char_id) )
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 2: //account reg
