@@ -580,21 +580,27 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 			ShowError("Login server unavailable, cant perform update on '%s' variable for AID:%d CID:%d\n",key,account_id,char_id);
 		}
 	} else if ( key[0] == '#' ) {/* local account reg */
+		char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+
 		if( is_string ) {
+			safestrncpy(name_plain, key + 1, strnlen(key, SCRIPT_VARNAME_LENGTH + 1) - 1);
+
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, key, index, val_esq) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, name_plain, index, val_esq) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, key, index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, name_plain, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {
+			safestrncpy(name_plain, key + 1, strnlen(key, SCRIPT_VARNAME_LENGTH + 1));
+
 			if( val ) {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, key, index, (int)val) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, name_plain, index, (int)val) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, key, index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, name_plain, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		}
@@ -633,7 +639,7 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 2: //account reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_str_db, account_id) )
+			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT('#', `key`, '$'), `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_str_db, account_id) )
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 1: //account2 reg
@@ -715,7 +721,7 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 2: //account reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_num_db, account_id) )
+			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT('#', `key`), `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_num_db, account_id) )
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 #if 0 // This is already checked above.
