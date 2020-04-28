@@ -666,6 +666,28 @@ CREATE TABLE IF NOT EXISTS `mapreg` (
 ) ENGINE=MyISAM;
 
 --
+-- Table structure for table `map_reg_num_db`
+--
+
+CREATE TABLE IF NOT EXISTS `map_reg_num_db` (
+  `key` VARCHAR(32) BINARY NOT NULL DEFAULT '',
+  `index` INT UNSIGNED NOT NULL DEFAULT '0',
+  `value` INT NOT NULL DEFAULT '0',
+  PRIMARY KEY (`key`, `index`)
+) ENGINE=MyISAM;
+
+--
+-- Table structure for table `map_reg_str_db`
+--
+
+CREATE TABLE IF NOT EXISTS `map_reg_str_db` (
+  `key` VARCHAR(32) BINARY NOT NULL DEFAULT '',
+  `index` INT UNSIGNED NOT NULL DEFAULT '0',
+  `value` VARCHAR(255) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`key`, `index`)
+) ENGINE=MyISAM;
+
+--
 -- Table structure for table `npc_market_data`
 --
 
@@ -938,6 +960,7 @@ INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1574463539); -- 2019-11-2
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1579817630); -- 2020-01-24--01-09.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1584838560); -- 2020-03-22--01-56.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1584842940); -- 2020-03-22--03-09.sql
+INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588050480); -- 2020-04-28--07-08.sql
 
 --
 -- Table structure for table `storage`
