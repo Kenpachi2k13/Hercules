@@ -655,17 +655,6 @@ CREATE TABLE IF NOT EXISTS `login` (
 INSERT IGNORE INTO `login` (`account_id`, `userid`, `user_pass`, `sex`, `email`) VALUES ('1', 's1', 'p1', 'S','athena@athena.com');
 
 --
--- Table structure for table `mapreg`
---
-
-CREATE TABLE IF NOT EXISTS `mapreg` (
-  `varname` VARCHAR(32) BINARY NOT NULL,
-  `index` INT UNSIGNED NOT NULL DEFAULT '0',
-  `value` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (`varname`,`index`)
-) ENGINE=MyISAM;
-
---
 -- Table structure for table `map_reg_num_db`
 --
 
@@ -961,6 +950,7 @@ INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1579817630); -- 2020-01-2
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1584838560); -- 2020-03-22--01-56.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1584842940); -- 2020-03-22--03-09.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588050480); -- 2020-04-28--07-08.sql
+INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1588055940); -- 2020-04-28--08-39.sql
 
 --
 -- Table structure for table `storage`
