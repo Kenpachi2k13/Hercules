@@ -101,11 +101,6 @@ static bool mapreg_setreg(int64 uid, int val)
 			m->is_string = false;
 
 			if (name[1] != '@' && !mapreg->skip_insert) {// write new variable to database
-				char tmp_str[(SCRIPT_VARNAME_LENGTH+1)*2+1];
-				SQL->EscapeStringLen(map->mysql_handle, tmp_str, name, strnlen(name, SCRIPT_VARNAME_LENGTH+1));
-				if( SQL_ERROR == SQL->Query(map->mysql_handle, "INSERT INTO `%s`(`varname`,`index`,`value`) VALUES ('%s','%u','%d')", mapreg->table, tmp_str, i, val) )
-					Sql_ShowDebug(map->mysql_handle);
-				
 				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 				if (stmt == NULL) {
@@ -139,9 +134,6 @@ static bool mapreg_setreg(int64 uid, int val)
 		i64db_remove(mapreg->regs.vars, uid);
 
 		if( name[1] != '@' ) {// Remove from database because it is unused.
-			if( SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%u'", mapreg->table, name, i) )
-				Sql_ShowDebug(map->mysql_handle);
-				
 			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 			if (stmt == NULL) {
@@ -188,9 +180,6 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 		if( i )
 			script->array_update(&mapreg->regs, uid, true);
 		if(name[1] != '@') {
-			if (SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%u'", mapreg->table, name, i))
-				Sql_ShowDebug(map->mysql_handle);
-				
 			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 			if (stmt == NULL) {
@@ -239,13 +228,6 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 			m->is_string = true;
 
 			if(name[1] != '@' && !mapreg->skip_insert) { //put returned null, so we must insert.
-				char tmp_str[(SCRIPT_VARNAME_LENGTH+1)*2+1];
-				char tmp_str2[255*2+1];
-				SQL->EscapeStringLen(map->mysql_handle, tmp_str, name, strnlen(name, SCRIPT_VARNAME_LENGTH+1));
-				SQL->EscapeStringLen(map->mysql_handle, tmp_str2, str, strnlen(str, 255));
-				if( SQL_ERROR == SQL->Query(map->mysql_handle, "INSERT INTO `%s`(`varname`,`index`,`value`) VALUES ('%s','%u','%s')", mapreg->table, tmp_str, i, tmp_str2) )
-					Sql_ShowDebug(map->mysql_handle);
-				
 				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 				if (stmt == NULL) {
@@ -379,55 +361,10 @@ static void mapreg_load_str_db(void)
  */
 static void script_load_mapreg(void)
 {
-	/*
-	        0        1       2
-	   +-------------------------+
-	   | varname | index | value |
-	   +-------------------------+
-	                                */
-	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
-	char varname[SCRIPT_VARNAME_LENGTH+1];
-	int index;
-	char value[255+1];
-	uint32 length;
-
-	if ( SQL_ERROR == SQL->StmtPrepare(stmt, "SELECT `varname`, `index`, `value` FROM `%s`", mapreg->table)
-	  || SQL_ERROR == SQL->StmtExecute(stmt)
-	  ) {
-		SqlStmt_ShowDebug(stmt);
-		SQL->StmtFree(stmt);
-		return;
-	}
-
 	mapreg->skip_insert = true;
-
-	SQL->StmtBindColumn(stmt, 0, SQLDT_STRING, &varname, sizeof varname, &length, NULL);
-	SQL->StmtBindColumn(stmt, 1, SQLDT_INT,    &index,   sizeof index,   NULL,    NULL);
-	SQL->StmtBindColumn(stmt, 2, SQLDT_STRING, &value,   sizeof value,   NULL,    NULL);
-
-	while ( SQL_SUCCESS == SQL->StmtNextRow(stmt) ) {
-		int s = script->add_variable(varname);
-		int i = index;
-
-
-		if( i64db_exists(mapreg->regs.vars, reference_uid(s, i)) ) {
-			ShowWarning("load_mapreg: duplicate! '%s' => '%s' skipping...\n",varname,value);
-			continue;
-		}
-		if( varname[length-1] == '$' ) {
-			mapreg->setregstr(reference_uid(s, i),value);
-		} else {
-			mapreg->setreg(reference_uid(s, i),atoi(value));
-		}
-	}
-
-	SQL->StmtFree(stmt);
-
 	mapreg->load_num_db();
 	mapreg->load_str_db();
-
 	mapreg->skip_insert = false;
-
 	mapreg->dirty = false;
 }
 
@@ -521,19 +458,12 @@ static void script_save_mapreg(void)
 				int i   = script_getvaridx(m->uid);
 				const char* name = script->get_str(num);
 				nullpo_retv(name);
-				if (!m->is_string) {
-					if( SQL_ERROR == SQL->Query(map->mysql_handle, "UPDATE `%s` SET `value`='%d' WHERE `varname`='%s' AND `index`='%d' LIMIT 1", mapreg->table, m->u.i, name, i) )
-						Sql_ShowDebug(map->mysql_handle);
 
+				if (!m->is_string)
 					mapreg->save_num_db(name, i, m->u.i);
-				} else {
-					char tmp_str2[2*255+1];
-					SQL->EscapeStringLen(map->mysql_handle, tmp_str2, m->u.str, safestrnlen(m->u.str, 255));
-					if( SQL_ERROR == SQL->Query(map->mysql_handle, "UPDATE `%s` SET `value`='%s' WHERE `varname`='%s' AND `index`='%d' LIMIT 1", mapreg->table, tmp_str2, name, i) )
-						Sql_ShowDebug(map->mysql_handle);
-
+				else
 					mapreg->save_str_db(name, i, m->u.str);
-				}
+
 				m->save = false;
 			}
 		}
@@ -673,7 +603,6 @@ void mapreg_defaults(void)
 	mapreg->ers = NULL;
 	mapreg->skip_insert = false;
 
-	safestrncpy(mapreg->table, "mapreg", sizeof(mapreg->table));
 	safestrncpy(mapreg->num_db, "map_reg_num_db", sizeof(mapreg->num_db));
 	safestrncpy(mapreg->str_db, "map_reg_str_db", sizeof(mapreg->str_db));
 	mapreg->dirty = false;

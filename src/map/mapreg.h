@@ -47,7 +47,6 @@ struct mapreg_interface {
 	/* */
 	struct eri *ers; //[Ind/Hercules]
 	/* */
-	char table[32];
 	char num_db[32];
 	char str_db[32];
 	/* */
