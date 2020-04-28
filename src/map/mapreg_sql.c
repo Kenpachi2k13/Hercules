@@ -662,26 +662,6 @@ static bool mapreg_config_read_registry(const char *filename, const struct confi
 }
 
 /**
- * Loads the mapreg configuration file.
- *
- * @param filename Path to configuration file (used in error and warning messages).
- * @param config   The current config being parsed.
- * @param imported Whether the current config is imported from another file.
- *
- * @retval false in case of error.
- */
-static bool mapreg_config_read(const char *filename, const struct config_setting_t *config, bool imported)
-{
-	nullpo_retr(false, filename);
-	nullpo_retr(false, config);
-
-	if (libconfig->setting_lookup_mutable_string(config, "mapreg_db", mapreg->table, sizeof(mapreg->table)) != CONFIG_TRUE)
-		return false;
-
-	return true;
-}
-
-/**
  * Interface defaults initializer.
  */
 void mapreg_defaults(void)
@@ -720,6 +700,5 @@ void mapreg_defaults(void)
 	mapreg->destroyreg = mapreg_destroyreg;
 	mapreg->reload = mapreg_reload;
 	mapreg->config_read_registry = mapreg_config_read_registry;
-	mapreg->config_read = mapreg_config_read;
 
 }

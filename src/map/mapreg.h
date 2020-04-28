@@ -70,7 +70,6 @@ struct mapreg_interface {
 	int (*destroyreg) (union DBKey key, struct DBData *data, va_list ap);
 	void (*reload) (void);
 	bool (*config_read_registry) (const char *filename, const struct config_setting_t *config, bool imported);
-	bool (*config_read) (const char *filename, const struct config_setting_t *config, bool imported);
 };
 
 #ifdef HERCULES_CORE
