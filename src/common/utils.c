@@ -24,6 +24,7 @@
 
 #include "common/cbasetypes.h"
 #include "common/core.h"
+#include "common/memmgr.h"
 #include "common/mmo.h"
 #include "common/nullpo.h"
 #include "common/showmsg.h"
@@ -470,6 +471,36 @@ const char *timestamp2string(char *str, size_t size, time_t timestamp, const cha
 	len = strftime(str, size, format, localtime(&timestamp));
 	memset(str + len, '\0', size - len);
 	return str;
+}
+
+/**
+ * Removes affixes from passed variable name.
+ *
+ * @param name The variable's name including affixes.
+ * @return The variable's name without affixes, or NULL if a NULL pointer was passed.
+ *
+ **/
+char *get_plain_var_name(const char *name)
+{
+	nullpo_retr(NULL, name);
+
+	size_t len = strlen(name);
+	int start = 0;
+
+	if (len > 2 && (name[1] == '@' || name[1] == '#'))
+		start = 2;
+	else if (len > 1 && (*name == '@' || *name == '#' || *name == '$' || *name == '.' || *name == '\''))
+		start = 1;
+
+	size_t count = len - start + 1;
+
+	if (name[len - 1] == '$')
+		count--;
+
+	char *name_plain = aMalloc(count);
+	safestrncpy(name_plain, name + start, count);
+
+	return name_plain;
 }
 
 /* [Ind/Hercules] Caching */
