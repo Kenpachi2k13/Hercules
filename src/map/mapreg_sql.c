@@ -410,7 +410,7 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
  **/
 static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 {
-	/*nullpo_retv(name);
+	nullpo_retv(name);
 	nullpo_retv(val);
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
@@ -436,7 +436,7 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);*/
+	SQL->StmtFree(stmt);
 }
 
 /**
