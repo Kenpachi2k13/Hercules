@@ -410,7 +410,7 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
  **/
 static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 {
-	nullpo_retv(name);
+	/*nullpo_retv(name);
 	nullpo_retv(val);
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
@@ -420,9 +420,9 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 		return;
 	}
 
-	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
+	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";*/
 	char *name_plain = get_plain_var_name(name);
-	char value[256];
+	/*char value[256];
 	safestrncpy(value, val, strnlen(val, 255) + 1);
 	size_t len_n = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 	size_t len_v = strnlen(value, sizeof(value));
@@ -436,7 +436,7 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);
+	SQL->StmtFree(stmt);*/
 }
 
 /**
