@@ -102,7 +102,7 @@ static bool mapreg_setreg(int64 uid, int val)
 			m->is_string = false;
 
 			if (name[1] != '@' && !mapreg->skip_insert) {// write new variable to database
-				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+				/*struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 				if (stmt == NULL) {
 					SqlStmt_ShowDebug(stmt);
@@ -121,7 +121,7 @@ static bool mapreg_setreg(int64 uid, int val)
 					}
 
 					SQL->StmtFree(stmt);
-				}
+				}*/
 			}
 			i64db_put(mapreg->regs.vars, uid, m);
 		}
@@ -134,7 +134,7 @@ static bool mapreg_setreg(int64 uid, int val)
 		i64db_remove(mapreg->regs.vars, uid);
 
 		if( name[1] != '@' ) {// Remove from database because it is unused.
-			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+			/*struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 			if (stmt == NULL) {
 				SqlStmt_ShowDebug(stmt);
@@ -152,7 +152,7 @@ static bool mapreg_setreg(int64 uid, int val)
 				}
 
 				SQL->StmtFree(stmt);
-			}
+			}*/
 		}
 	}
 
@@ -179,7 +179,7 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 		if( i )
 			script->array_update(&mapreg->regs, uid, true);
 		if(name[1] != '@') {
-			struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+			/*struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 			if (stmt == NULL) {
 				SqlStmt_ShowDebug(stmt);
@@ -197,7 +197,7 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 				}
 
 				SQL->StmtFree(stmt);
-			}
+			}*/
 		}
 		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
 			if( m->u.str != NULL )
@@ -226,7 +226,7 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 			m->is_string = true;
 
 			if(name[1] != '@' && !mapreg->skip_insert) { //put returned null, so we must insert.
-				struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
+				/*struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
 				if (stmt == NULL) {
 					SqlStmt_ShowDebug(stmt);
@@ -248,7 +248,7 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 					}
 
 					SQL->StmtFree(stmt);
-				}
+				}*/
 			}
 			i64db_put(mapreg->regs.vars, uid, m);
 		}
@@ -375,7 +375,7 @@ static void script_load_mapreg(void)
  **/
 static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 {
-	nullpo_retv(name);
+	/*nullpo_retv(name);
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
@@ -397,7 +397,7 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);
+	SQL->StmtFree(stmt);*/
 }
 
 /**
@@ -410,7 +410,7 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
  **/
 static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 {
-	nullpo_retv(name);
+	/*nullpo_retv(name);
 	nullpo_retv(val);
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
@@ -436,7 +436,7 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);
+	SQL->StmtFree(stmt);*/
 }
 
 /**
