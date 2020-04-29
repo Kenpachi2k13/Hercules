@@ -34,6 +34,7 @@
 #include "common/sql.h"
 #include "common/strlib.h"
 #include "common/timer.h"
+#include "common/utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -107,12 +108,11 @@ static bool mapreg_setreg(int64 uid, int val)
 					SqlStmt_ShowDebug(stmt);
 				} else {
 					const char *query = "INSERT INTO `%s` (`key`, `index`, `value`) VALUES (?, ?, ?)";
-					char name_plain[SCRIPT_VARNAME_LENGTH + 1];
-					safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
-					size_t len = strnlen(name_plain, sizeof(name_plain));
+					char *name_plain = get_plain_var_name(name);
+					size_t len = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 
 					if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
-					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, name_plain, len)
 					    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
 					    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_INT32, &val, sizeof(val))
 					    || SQL_ERROR == SQL->StmtExecute(stmt)) {
@@ -140,12 +140,11 @@ static bool mapreg_setreg(int64 uid, int val)
 				SqlStmt_ShowDebug(stmt);
 			} else {
 				const char *query = "DELETE FROM `%s` WHERE `key`=? AND `index`=?";
-				char name_plain[SCRIPT_VARNAME_LENGTH + 1];
-				safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
-				size_t len = strnlen(name_plain, sizeof(name_plain));
+				char *name_plain = get_plain_var_name(name);
+				size_t len = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 
 				if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
-				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, name_plain, len)
 				    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
 				    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 					SqlStmt_ShowDebug(stmt);
@@ -186,12 +185,11 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 				SqlStmt_ShowDebug(stmt);
 			} else {
 				const char *query = "DELETE FROM `%s` WHERE `key`=? AND `index`=?";
-				char name_plain[SCRIPT_VARNAME_LENGTH + 1];
-				safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
-				size_t len = strnlen(name_plain, sizeof(name_plain));
+				char *name_plain = get_plain_var_name(name);
+				size_t len = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 
 				if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
-				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len)
+				    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, name_plain, len)
 				    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
 				    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 					SqlStmt_ShowDebug(stmt);
@@ -234,15 +232,14 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 					SqlStmt_ShowDebug(stmt);
 				} else {
 					const char *query = "INSERT INTO `%s` (`key`, `index`, `value`) VALUES (?, ?, ?)";
-					char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+					char *name_plain = get_plain_var_name(name);
 					char value[256];
-					safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1) - 1);
 					safestrncpy(value, str, strnlen(str, 255) + 1);
-					size_t len_n = strnlen(name_plain, sizeof(name_plain));
+					size_t len_n = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 					size_t len_v = strnlen(value, sizeof(value));
 
 					if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
-					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &name_plain, len_n)
+					    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, name_plain, len_n)
 					    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_UINT32, &i, sizeof(i))
 					    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_STRING, &value, len_v)
 					    || SQL_ERROR == SQL->StmtExecute(stmt)) {
@@ -388,13 +385,12 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 	}
 
 	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
-	char name_plain[SCRIPT_VARNAME_LENGTH + 1];
-	safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1));
-	size_t len = strnlen(name_plain, sizeof(name_plain));
+	char *name_plain = get_plain_var_name(name);
+	size_t len = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 
 	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_INT32, &val, sizeof(val))
-	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, &name_plain, len)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, name_plain, len)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
 	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 		SqlStmt_ShowDebug(stmt);
@@ -425,16 +421,15 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 	}
 
 	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
-	char name_plain[SCRIPT_VARNAME_LENGTH + 1];
+	char *name_plain = get_plain_var_name(name);
 	char value[256];
-	safestrncpy(name_plain, name + 1, strnlen(name, SCRIPT_VARNAME_LENGTH + 1) - 1);
 	safestrncpy(value, val, strnlen(val, 255) + 1);
-	size_t len_n = strnlen(name_plain, sizeof(name_plain));
+	size_t len_n = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 	size_t len_v = strnlen(value, sizeof(value));
 
 	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &value, len_v)
-	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, &name_plain, len_n)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, name_plain, len_n)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
 	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 		SqlStmt_ShowDebug(stmt);
