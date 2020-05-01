@@ -647,12 +647,12 @@ static void account_mmo_save_accreg2(AccountDB *self, int fd, int account_id, in
 			switch (RFIFOB(fd, cursor++)) {
 				/* int */
 				case 0:
-					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%u')", db->global_acc_reg_num_db, account_id, get_plain_var_name(key), index, RFIFOL(fd, cursor)) )
+					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%u')", db->global_acc_reg_num_db, account_id, key, index, RFIFOL(fd, cursor)) )
 						Sql_ShowDebug(sql_handle);
 					cursor += 4;
 					break;
 				case 1:
-					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_num_db, account_id, get_plain_var_name(key), index) )
+					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_num_db, account_id, key, index) )
 						Sql_ShowDebug(sql_handle);
 					break;
 				/* str */
@@ -660,11 +660,11 @@ static void account_mmo_save_accreg2(AccountDB *self, int fd, int account_id, in
 					len = RFIFOB(fd, cursor);
 					safestrncpy(sval, RFIFOP(fd, cursor + 1), min((int)sizeof(sval), len));
 					cursor += len + 1;
-					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", db->global_acc_reg_str_db, account_id, get_plain_var_name(key), index, sval) )
+					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", db->global_acc_reg_str_db, account_id, key, index, sval) )
 						Sql_ShowDebug(sql_handle);
 					break;
 				case 3:
-					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_str_db, account_id, get_plain_var_name(key), index) )
+					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_str_db, account_id, key, index) )
 						Sql_ShowDebug(sql_handle);
 					break;
 				default:

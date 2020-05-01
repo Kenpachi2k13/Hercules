@@ -476,31 +476,58 @@ const char *timestamp2string(char *str, size_t size, time_t timestamp, const cha
 /**
  * Removes affixes from passed variable name.
  *
- * @param name The variable's name including affixes.
- * @return The variable's name without affixes, or NULL if a NULL pointer was passed.
+ * @param name The variable name to escape.
+ * @param out The variable to store the escaped name in. (Should be a char array of size SCRIPT_VARNAME_LENGTH + 1.)
+ * @return The escaped name's length. (0 in case of error.)
  *
  **/
-char *get_plain_var_name(const char *name)
+int escape_variable_name(const char *name, char *out)
 {
-	nullpo_retr(NULL, name);
+	nullpo_ret(name);
+	nullpo_ret(out);
 
-	size_t len = strlen(name);
-	int start = 0;
+	int name_length = strlen(name);
 
-	if (len > 2 && (name[1] == '@' || name[1] == '#'))
-		start = 2;
-	else if (len > 1 && (*name == '@' || *name == '#' || *name == '$' || *name == '.' || *name == '\''))
-		start = 1;
+	Assert_ret(name_length != 0); // Passed variable name is empty.
 
-	size_t count = len - start + 1;
+	int cursor = 0;
 
-	if (name[len - 1] == '$')
-		count--;
+	switch (name[0]) {
+	case '@':
+	case '\'':
+		cursor = 1;
+		break;
+	case '#':
+		cursor = (name_length > 1 && name[1] == '#') ? 2 : 1;
+		break;
+	case '.':
+	case '$':
+		cursor = (name_length > 1 && name[1] == '@') ? 2 : 1;
+		break;
+	default:
+		break;
+	}
 
-	char *name_plain = aMalloc(count);
-	safestrncpy(name_plain, name + start, count);
+	int escaped_name_start_index = cursor;
+	int escaped_name_length = 0;
 
-	return name_plain;
+	while (cursor < name_length && (ISALNUM(name[cursor]) != 0 || name[cursor] == '_')) {
+		escaped_name_length++;
+		cursor++;
+	}
+
+	Assert_ret(escaped_name_length > 0); // Escaped variable name is empty.
+	Assert_ret(escaped_name_length <= SCRIPT_VARNAME_LENGTH); // Escaped variable name too long.
+
+	if (cursor < name_length && name[cursor] == '$')
+		cursor++;
+
+	Assert_ret(cursor == name_length); // Invalid character in variable name.
+
+	// Copy escaped variable name to out parameter.
+	safestrncpy(out, name + escaped_name_start_index, escaped_name_length + 1);
+
+	return escaped_name_length;
 }
 
 /* [Ind/Hercules] Caching */

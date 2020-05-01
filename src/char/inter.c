@@ -584,18 +584,18 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 		if( is_string ) {
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, get_plain_var_name(key), index, val_esq) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, key, index, val_esq) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, get_plain_var_name(key), index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, key, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {
 			if( val ) {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, get_plain_var_name(key), index, (int)val) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, key, index, (int)val) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, get_plain_var_name(key), index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, key, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		}
@@ -603,10 +603,10 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 		if( is_string ) {
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, get_plain_var_name(key), index, val_esq) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, key, index, val_esq) )
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, get_plain_var_name(key), index) )
+				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, key, index) )
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {

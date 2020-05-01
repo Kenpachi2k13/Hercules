@@ -375,7 +375,13 @@ static void script_load_mapreg(void)
  **/
 static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 {
-	/*nullpo_retv(name);
+	nullpo_retv(name);
+
+	char escaped_name[SCRIPT_VARNAME_LENGTH + 1];
+	int escaped_name_length = escape_variable_name(name, escaped_name);
+
+	if (escaped_name_length == 0)
+		return;
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
@@ -385,19 +391,16 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 	}
 
 	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
-	char *name_plain = get_plain_var_name(name);
-	size_t len = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
 
 	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->num_db)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_INT32, &val, sizeof(val))
-	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, name_plain, len)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, escaped_name, escaped_name_length)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
 	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 		SqlStmt_ShowDebug(stmt);
-		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);*/
+	SQL->StmtFree(stmt);
 }
 
 /**
@@ -410,8 +413,14 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
  **/
 static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 {
-	/*nullpo_retv(name);
+	nullpo_retv(name);
 	nullpo_retv(val);
+
+	char escaped_name[SCRIPT_VARNAME_LENGTH + 1];
+	int escaped_name_length = escape_variable_name(name, escaped_name);
+
+	if (escaped_name_length == 0)
+		return;
 
 	struct SqlStmt *stmt = SQL->StmtMalloc(map->mysql_handle);
 
@@ -420,26 +429,17 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 		return;
 	}
 
-	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";*/
-	int x = 1;
-	char *name_plain = get_plain_var_name(name);
-	if (name_plain[0] == 'z')
-		x = 2;
-	/*char value[256];
-	safestrncpy(value, val, strnlen(val, 255) + 1);
-	size_t len_n = strnlen(name_plain, SCRIPT_VARNAME_LENGTH);
-	size_t len_v = strnlen(value, sizeof(value));
+	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
 
 	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
-	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, &value, len_v)
-	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, name_plain, len_n)
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 0, SQLDT_STRING, val, strlen(val))
+	    || SQL_ERROR == SQL->StmtBindParam(stmt, 1, SQLDT_STRING, &escaped_name, escaped_name_length)
 	    || SQL_ERROR == SQL->StmtBindParam(stmt, 2, SQLDT_UINT32, &idx, sizeof(idx))
 	    || SQL_ERROR == SQL->StmtExecute(stmt)) {
 		SqlStmt_ShowDebug(stmt);
-		SQL->StmtFree(stmt);
 	}
 
-	SQL->StmtFree(stmt);*/
+	SQL->StmtFree(stmt);
 }
 
 /**
