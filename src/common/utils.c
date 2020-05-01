@@ -486,7 +486,7 @@ int escape_variable_name(const char *name, char *out)
 	nullpo_ret(name);
 	nullpo_ret(out);
 
-	int name_length = strlen(name);
+	size_t name_length = strlen(name);
 
 	Assert_ret(name_length != 0); // Passed variable name is empty.
 
