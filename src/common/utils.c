@@ -488,7 +488,7 @@ size_t escape_variable_name(const char *name, char *out)
 
 	size_t name_length = strlen(name);
 
-	Assert_ret(name_length != 0); // Passed variable name is empty.
+	Assert_ret(name_length > 0); // Passed variable name is empty.
 
 	int cursor = 0;
 
@@ -509,7 +509,7 @@ size_t escape_variable_name(const char *name, char *out)
 	}
 
 	int escaped_name_start_index = cursor;
-	int escaped_name_length = 0;
+	size_t escaped_name_length = 0;
 
 	while (cursor < name_length && (ISALNUM(name[cursor]) != 0 || name[cursor] == '_')) {
 		escaped_name_length++;
@@ -517,7 +517,7 @@ size_t escape_variable_name(const char *name, char *out)
 	}
 
 	Assert_ret(escaped_name_length > 0); // Escaped variable name is empty.
-	Assert_ret(escaped_name_length <= SCRIPT_VARNAME_LENGTH); // Escaped variable name too long.
+	Assert_ret(escaped_name_length <= SCRIPT_VARNAME_LENGTH); // Escaped variable name is too long.
 
 	if (cursor < name_length && name[cursor] == '$')
 		cursor++;
