@@ -472,6 +472,64 @@ const char *timestamp2string(char *str, size_t size, time_t timestamp, const cha
 	return str;
 }
 
+/**
+ * Removes affixes from passed variable name.
+ * Can also be used to validate variable name format.
+ *
+ * @param name The variable name to escape.
+ * @param out The variable to store the escaped name in. (Should be a char array of size SCRIPT_VARNAME_LENGTH + 1.)
+ * @return The escaped name's length. (0 in case of error.)
+ *
+ **/
+size_t escape_variable_name(const char *name, char *out)
+{
+	nullpo_ret(name);
+	nullpo_ret(out);
+
+	size_t name_length = strlen(name);
+
+	Assert_ret(name_length > 0); // Passed variable name is empty.
+
+	int cursor = 0;
+
+	switch (name[0]) {
+	case '@':
+	case '\'':
+		cursor = 1;
+		break;
+	case '#':
+		cursor = (name_length > 1 && name[1] == '#') ? 2 : 1;
+		break;
+	case '.':
+	case '$':
+		cursor = (name_length > 1 && name[1] == '@') ? 2 : 1;
+		break;
+	default:
+		break;
+	}
+
+	int escaped_name_start_index = cursor;
+	size_t escaped_name_length = 0;
+
+	while (cursor < name_length && (ISALNUM(name[cursor]) != 0 || name[cursor] == '_')) {
+		escaped_name_length++;
+		cursor++;
+	}
+
+	Assert_ret(escaped_name_length > 0); // Escaped variable name is empty.
+	Assert_ret(escaped_name_length <= SCRIPT_VARNAME_LENGTH); // Escaped variable name is too long.
+
+	if (cursor < name_length && name[cursor] == '$')
+		cursor++;
+
+	Assert_ret(cursor == name_length); // Invalid character in variable name.
+
+	// Copy escaped variable name to out parameter.
+	safestrncpy(out, name + escaped_name_start_index, escaped_name_length + 1);
+
+	return escaped_name_length;
+}
+
 /* [Ind/Hercules] Caching */
 static bool HCache_check(const char *file)
 {
