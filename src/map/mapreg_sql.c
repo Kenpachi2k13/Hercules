@@ -378,7 +378,7 @@ static void mapreg_save_num_db(const char *name, unsigned int idx, int val)
 	nullpo_retv(name);
 
 	char escaped_name[SCRIPT_VARNAME_LENGTH + 1];
-	int escaped_name_length = escape_variable_name(name, escaped_name);
+	size_t escaped_name_length = escape_variable_name(name, escaped_name);
 
 	if (escaped_name_length == 0)
 		return;
@@ -417,7 +417,7 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 	nullpo_retv(val);
 
 	char escaped_name[SCRIPT_VARNAME_LENGTH + 1];
-	int escaped_name_length = escape_variable_name(name, escaped_name);
+	size_t escaped_name_length = escape_variable_name(name, escaped_name);
 
 	if (escaped_name_length == 0)
 		return;
