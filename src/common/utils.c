@@ -481,7 +481,7 @@ const char *timestamp2string(char *str, size_t size, time_t timestamp, const cha
  * @return The escaped name's length. (0 in case of error.)
  *
  **/
-int escape_variable_name(const char *name, char *out)
+size_t escape_variable_name(const char *name, char *out)
 {
 	nullpo_ret(name);
 	nullpo_ret(out);

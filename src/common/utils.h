@@ -59,7 +59,7 @@ int64 apply_percentrate64(int64 value, int rate, int maxrate);
 int apply_percentrate(int value, int rate, int maxrate);
 
 const char* timestamp2string(char* str, size_t size, time_t timestamp, const char* format);
-int escape_variable_name(const char *name, char *out);
+size_t escape_variable_name(const char *name, char *out);
 
 //////////////////////////////////////////////////////////////////////////
 // byte word dword access [Shinomori]
