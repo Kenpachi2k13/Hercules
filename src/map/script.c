@@ -2897,7 +2897,7 @@ static struct script_data *get_val(struct script_state *st, struct script_data *
 	prefix = name[0];
 	postfix = name[strlen(name) - 1];
 
-	if (strlen(name) > SCRIPT_VARNAME_LENGTH) {
+	if (strlen(name) > UCHAR_MAX) {
 		ShowError("script_get_val: variable name too long. '%s'\n", name);
 		script->reportsrc(st);
 		st->state = END;
@@ -3427,12 +3427,25 @@ static int set_reg(struct script_state *st, struct map_session_data *sd, int64 n
 		return 0;
 	}
 
-	if (strlen(name) > SCRIPT_VARNAME_LENGTH) {
-		ShowError("script:set_reg: variable name too long. '%s'\n", name);
+	if (strlen(name) > UCHAR_MAX) {
+		ShowError("script:set_reg: Variable name %s is too long: %lu! Skipping...\n", name, strlen(name));
 		if (st) {
 			script->reportsrc(st);
 			st->state = END;
 		}
+		return 0;
+	}
+
+	char name_escaped[SCRIPT_VARNAME_LENGTH + 1];
+
+	if (escape_variable_name(name, name_escaped) == 0) {
+		ShowError("script:set_reg: Non-conforming variable name %s! Skipping...\n", name);
+
+		if (st != NULL) {
+			script->reportsrc(st);
+			st->state = END;
+		}
+
 		return 0;
 	}
 
