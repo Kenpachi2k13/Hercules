@@ -279,7 +279,7 @@ static void mapreg_load_num_db(void)
 	}
 
 	const char *query = "SELECT CONCAT('$', `key`), `index`, `value` FROM `%s`";
-	char name[SCRIPT_VARNAME_LENGTH + 1];
+	char name[UCHAR_MAX + 1];
 	unsigned int index;
 	int value;
 
@@ -327,7 +327,7 @@ static void mapreg_load_str_db(void)
 	}
 
 	const char *query = "SELECT CONCAT('$', `key`, '$'), `index`, `value` FROM `%s`";
-	char name[SCRIPT_VARNAME_LENGTH + 1];
+	char name[UCHAR_MAX + 1];
 	unsigned int index;
 	char value[255 + 1];
 

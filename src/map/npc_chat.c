@@ -394,7 +394,8 @@ static int npc_chat_sub(struct block_list *bl, va_list ap)
 				// save out the matched strings
 				for (i = 0; i < r; i++)
 				{
-					char var[15], val[255];
+					char var[UCHAR_MAX + 1];
+					char val[255];
 					snprintf(var, sizeof(var), "$@p%i$", i);
 					libpcre->copy_substring(msg, offsets, r, i, val, sizeof(val));
 					script->set_var(sd, var, val);

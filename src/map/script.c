@@ -15426,7 +15426,7 @@ static BUILDIN(petloot)
 static BUILDIN(getinventorylist)
 {
 	struct map_session_data *sd = script->rid2sd(st);
-	char script_var[SCRIPT_VARNAME_LENGTH];
+	char script_var[UCHAR_MAX + 1];
 	int j = 0, k = 0;
 
 	if (sd == NULL)
@@ -15470,7 +15470,7 @@ static BUILDIN(getinventorylist)
 static BUILDIN(getcartinventorylist)
 {
 	struct map_session_data *sd = script->rid2sd(st);
-	char card_var[SCRIPT_VARNAME_LENGTH];
+	char card_var[UCHAR_MAX + 1];
 
 	int i,j=0,k;
 	if(!sd) return true;
