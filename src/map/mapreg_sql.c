@@ -242,7 +242,7 @@ static bool mapreg_setregstr(int64 uid, const char *str)
 						SqlStmt_ShowDebug(stmt);
 					} else {
 						const char *query = "INSERT INTO `%s` (`key`, `index`, `value`) VALUES (?, ?, ?)";
-						char value[255 + 1];
+						char value[SCRIPT_STRING_VAR_LENGTH + 1];
 						safestrncpy(value, str, sizeof(value));
 						size_t len_v = strlen(value);
 
@@ -329,7 +329,7 @@ static void mapreg_load_str_db(void)
 	const char *query = "SELECT CONCAT('$', `key`, '$'), `index`, `value` FROM `%s`";
 	char name[UCHAR_MAX + 1];
 	unsigned int index;
-	char value[255 + 1];
+	char value[SCRIPT_STRING_VAR_LENGTH + 1];
 
 	if (SQL_ERROR == SQL->StmtPrepare(stmt, query, mapreg->str_db)
 	    || SQL_ERROR == SQL->StmtExecute(stmt)
@@ -438,7 +438,7 @@ static void mapreg_save_str_db(const char *name, unsigned int idx, char *val)
 	}
 
 	const char *query = "UPDATE `%s` SET `value`=? WHERE `key`=? AND `index`=? LIMIT 1";
-	char value[255 + 1];
+	char value[SCRIPT_STRING_VAR_LENGTH + 1];
 	safestrncpy(value, val, sizeof(value));
 	size_t len_v = strlen(value);
 
