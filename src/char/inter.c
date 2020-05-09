@@ -49,6 +49,7 @@
 #include "common/sql.h"
 #include "common/strlib.h"
 #include "common/timer.h"
+#include "common/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -572,6 +573,12 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 {
 	char val_esq[1000];
 	nullpo_retv(key);
+
+	char name_escaped[SCRIPT_VARNAME_LENGTH + 1];
+
+	if (escape_variable_name(key, name_escaped) == 0)
+		return; // Non-conforming variable name.
+
 	/* to login server we go! */
 	if( key[0] == '#' && key[1] == '#' ) {/* global account reg */
 		if (sockt->session_is_valid(chr->login_fd))
@@ -583,18 +590,18 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 		if( is_string ) {
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, key, index, val_esq) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", acc_reg_str_db, account_id, name_escaped, index, val_esq))
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, key, index) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_str_db, account_id, name_escaped, index))
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {
 			if( val ) {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, key, index, (int)val) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", acc_reg_num_db, account_id, name_escaped, index, (int)val))
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, key, index) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", acc_reg_num_db, account_id, name_escaped, index))
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		}
@@ -602,18 +609,18 @@ static void inter_savereg(int account_id, int char_id, const char *key, unsigned
 		if( is_string ) {
 			if( val ) {
 				SQL->EscapeString(inter->sql_handle, val_esq, (char*)val);
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, key, index, val_esq) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", char_reg_str_db, char_id, name_escaped, index, val_esq))
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, key, index) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_str_db, char_id, name_escaped, index))
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		} else {
 			if( val ) {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", char_reg_num_db, char_id, key, index, (int)val) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`char_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%d')", char_reg_num_db, char_id, name_escaped, index, (int)val))
 					Sql_ShowDebug(inter->sql_handle);
 			} else {
-				if( SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_num_db, char_id, key, index) )
+				if (SQL_ERROR == SQL->Query(inter->sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", char_reg_num_db, char_id, name_escaped, index))
 					Sql_ShowDebug(inter->sql_handle);
 			}
 		}
@@ -629,11 +636,11 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 
 	switch( type ) {
 		case 3: //char reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `char_id`='%d'", char_reg_str_db, char_id) )
+			if (SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT(`key`, '$'), `index`, `value` FROM `%s` WHERE `char_id`='%d'", char_reg_str_db, char_id))
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 2: //account reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_str_db, account_id) )
+			if (SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT('#', `key`, '$'), `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_str_db, account_id))
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 1: //account2 reg
@@ -662,13 +669,18 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 	 **/
 	while ( SQL_SUCCESS == SQL->NextRow(inter->sql_handle) ) {
 		SQL->GetData(inter->sql_handle, 0, &data, NULL);
-		len = strlen(data)+1;
+		len = strlen(data);
 
-		WFIFOB(fd, plen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+		if (len > 255) {
+			ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, data, len);
+			continue;
+		}
+
+		WFIFOB(fd, plen) = (unsigned char)len;
 		plen += 1;
 
-		safestrncpy(WFIFOP(fd,plen), data, len);
-		plen += len;
+		safestrncpy(WFIFOP(fd, plen), data, len + 1);
+		plen += len + 1;
 
 		SQL->GetData(inter->sql_handle, 1, &data, NULL);
 
@@ -715,7 +727,7 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 		case 2: //account reg
-			if( SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_num_db, account_id) )
+			if (SQL_ERROR == SQL->Query(inter->sql_handle, "SELECT CONCAT('#', `key`), `index`, `value` FROM `%s` WHERE `account_id`='%d'", acc_reg_num_db, account_id))
 				Sql_ShowDebug(inter->sql_handle);
 			break;
 #if 0 // This is already checked above.
@@ -743,13 +755,18 @@ static int inter_accreg_fromsql(int account_id, int char_id, int fd, int type)
 	 **/
 	while ( SQL_SUCCESS == SQL->NextRow(inter->sql_handle) ) {
 		SQL->GetData(inter->sql_handle, 0, &data, NULL);
-		len = strlen(data)+1;
+		len = strlen(data);
 
-		WFIFOB(fd, plen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+		if (len > 255) {
+			ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, data, len);
+			continue;
+		}
+
+		WFIFOB(fd, plen) = (unsigned char)len;
 		plen += 1;
 
-		safestrncpy(WFIFOP(fd,plen), data, len);
-		plen += len;
+		safestrncpy(WFIFOP(fd, plen), data, len + 1);
+		plen += len + 1;
 
 		SQL->GetData(inter->sql_handle, 1, &data, NULL);
 

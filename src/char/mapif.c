@@ -2030,7 +2030,7 @@ static int mapif_parse_Registry(int fd)
 
 	if (count != 0) {
 		int cursor = 14, i;
-		char key[SCRIPT_VARNAME_LENGTH+1], sval[254];
+		char sval[254];
 		bool isLoginActive = sockt->session_is_active(chr->login_fd);
 
 		if (isLoginActive)
@@ -2039,8 +2039,9 @@ static int mapif_parse_Registry(int fd)
 		for (i = 0; i < count; i++) {
 			unsigned int index;
 			int len = RFIFOB(fd, cursor);
-			safestrncpy(key, RFIFOP(fd, cursor + 1), min((int)sizeof(key), len));
-			cursor += len + 1;
+			char *key = aMalloc(len + 1);
+			safestrncpy(key, RFIFOP(fd, cursor + 1), len + 1);
+			cursor += len + 2;
 
 			index = RFIFOL(fd, cursor);
 			cursor += 4;
@@ -2066,8 +2067,11 @@ static int mapif_parse_Registry(int fd)
 				break;
 			default:
 				ShowError("mapif->parse_Registry: unknown type %d\n", RFIFOB(fd, cursor - 1));
+				aFree(key);
 				return 1;
 			}
+
+			aFree(key);
 		}
 
 		if (isLoginActive)

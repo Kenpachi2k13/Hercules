@@ -2885,13 +2885,18 @@ static void char_global_accreg_to_login_send(void)
 static void char_global_accreg_to_login_add(const char *key, unsigned int index, intptr_t val, bool is_string)
 {
 	int nlen = WFIFOW(chr->login_fd, 2);
-	size_t len = strlen(key)+1;
+	size_t len = strlen(key);
 
-	WFIFOB(chr->login_fd, nlen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+	if (len > 255) {
+		ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, key, len);
+		return;
+	}
+
+	WFIFOB(chr->login_fd, nlen) = (unsigned char)len;
 	nlen += 1;
 
-	safestrncpy(WFIFOP(chr->login_fd,nlen), key, len);
-	nlen += len;
+	safestrncpy(WFIFOP(chr->login_fd, nlen), key, len + 1);
+	nlen += len + 1;
 
 	WFIFOL(chr->login_fd, nlen) = index;
 	nlen += 4;

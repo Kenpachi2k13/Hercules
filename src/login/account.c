@@ -33,6 +33,7 @@
 #include "common/socket.h"
 #include "common/sql.h"
 #include "common/strlib.h"
+#include "common/utils.h"
 
 #include <stdlib.h>
 
@@ -632,26 +633,45 @@ static void account_mmo_save_accreg2(AccountDB *self, int fd, int account_id, in
 	sql_handle = db->accounts;
 	if (count) {
 		int cursor = 14, i;
-		char key[SCRIPT_VARNAME_LENGTH+1], sval[254];
+		char sval[254];
 
 		for (i = 0; i < count; i++) {
 			unsigned int index;
 			int len = RFIFOB(fd, cursor);
-			safestrncpy(key, RFIFOP(fd, cursor + 1), min((int)sizeof(key), len));
-			cursor += len + 1;
+			char *key = aMalloc(len + 1);
+			safestrncpy(key, RFIFOP(fd, cursor + 1), len + 1);
+			cursor += len + 2;
 
 			index = RFIFOL(fd, cursor);
 			cursor += 4;
 
+			char name_escaped[SCRIPT_VARNAME_LENGTH + 1];
+
+			if (escape_variable_name(key, name_escaped) == 0) {
+				switch (RFIFOB(fd, cursor++)) {
+				case 0:
+					cursor += 4;
+					break;
+				case 2:
+					cursor += RFIFOB(fd, cursor) + 1;
+					break;
+				}
+
+				aFree(key);
+				continue; // Non-conforming variable name.
+			}
+
+			aFree(key);
+
 			switch (RFIFOB(fd, cursor++)) {
 				/* int */
 				case 0:
-					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%u')", db->global_acc_reg_num_db, account_id, key, index, RFIFOL(fd, cursor)) )
+					if (SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%u')", db->global_acc_reg_num_db, account_id, name_escaped, index, RFIFOL(fd, cursor)))
 						Sql_ShowDebug(sql_handle);
 					cursor += 4;
 					break;
 				case 1:
-					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_num_db, account_id, key, index) )
+					if (SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_num_db, account_id, name_escaped, index))
 						Sql_ShowDebug(sql_handle);
 					break;
 				/* str */
@@ -659,11 +679,11 @@ static void account_mmo_save_accreg2(AccountDB *self, int fd, int account_id, in
 					len = RFIFOB(fd, cursor);
 					safestrncpy(sval, RFIFOP(fd, cursor + 1), min((int)sizeof(sval), len));
 					cursor += len + 1;
-					if( SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", db->global_acc_reg_str_db, account_id, key, index, sval) )
+					if (SQL_ERROR == SQL->Query(sql_handle, "REPLACE INTO `%s` (`account_id`,`key`,`index`,`value`) VALUES ('%d','%s','%u','%s')", db->global_acc_reg_str_db, account_id, name_escaped, index, sval))
 						Sql_ShowDebug(sql_handle);
 					break;
 				case 3:
-					if( SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_str_db, account_id, key, index) )
+					if (SQL_ERROR == SQL->Query(sql_handle, "DELETE FROM `%s` WHERE `account_id` = '%d' AND `key` = '%s' AND `index` = '%u' LIMIT 1", db->global_acc_reg_str_db, account_id, name_escaped, index))
 						Sql_ShowDebug(sql_handle);
 					break;
 				default:
@@ -684,7 +704,7 @@ static void account_mmo_send_accreg2(AccountDB *self, int fd, int account_id, in
 
 	nullpo_retv(db);
 	sql_handle = db->accounts;
-	if( SQL_ERROR == SQL->Query(sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", db->global_acc_reg_str_db, account_id) )
+	if (SQL_ERROR == SQL->Query(sql_handle, "SELECT CONCAT('##', `key`, '$'), `index`, `value` FROM `%s` WHERE `account_id`='%d'", db->global_acc_reg_str_db, account_id))
 		Sql_ShowDebug(sql_handle);
 
 	WFIFOHEAD(fd, 60000 + 300);
@@ -705,13 +725,18 @@ static void account_mmo_send_accreg2(AccountDB *self, int fd, int account_id, in
 	 **/
 	while ( SQL_SUCCESS == SQL->NextRow(sql_handle) ) {
 		SQL->GetData(sql_handle, 0, &data, NULL);
-		len = strlen(data)+1;
+		len = strlen(data);
 
-		WFIFOB(fd, plen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+		if (len > 255) {
+			ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, data, len);
+			continue;
+		}
+
+		WFIFOB(fd, plen) = (unsigned char)len;
 		plen += 1;
 
-		safestrncpy(WFIFOP(fd,plen), data, len);
-		plen += len;
+		safestrncpy(WFIFOP(fd, plen), data, len + 1);
+		plen += len + 1;
 
 		SQL->GetData(sql_handle, 1, &data, NULL);
 
@@ -752,7 +777,7 @@ static void account_mmo_send_accreg2(AccountDB *self, int fd, int account_id, in
 
 	SQL->FreeResult(sql_handle);
 
-	if( SQL_ERROR == SQL->Query(sql_handle, "SELECT `key`, `index`, `value` FROM `%s` WHERE `account_id`='%d'", db->global_acc_reg_num_db, account_id) )
+	if (SQL_ERROR == SQL->Query(sql_handle, "SELECT CONCAT('##', `key`), `index`, `value` FROM `%s` WHERE `account_id`='%d'", db->global_acc_reg_num_db, account_id))
 		Sql_ShowDebug(sql_handle);
 
 	WFIFOHEAD(fd, 60000 + 300);
@@ -773,13 +798,18 @@ static void account_mmo_send_accreg2(AccountDB *self, int fd, int account_id, in
 	 **/
 	while ( SQL_SUCCESS == SQL->NextRow(sql_handle) ) {
 		SQL->GetData(sql_handle, 0, &data, NULL);
-		len = strlen(data)+1;
+		len = strlen(data);
 
-		WFIFOB(fd, plen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+		if (len > 255) {
+			ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, data, len);
+			continue;
+		}
+
+		WFIFOB(fd, plen) = (unsigned char)len;
 		plen += 1;
 
-		safestrncpy(WFIFOP(fd,plen), data, len);
-		plen += len;
+		safestrncpy(WFIFOP(fd, plen), data, len + 1);
+		plen += len + 1;
 
 		SQL->GetData(sql_handle, 1, &data, NULL);
 

@@ -49,6 +49,7 @@
 #include "common/socket.h"
 #include "common/strlib.h"
 #include "common/timer.h"
+#include "common/utils.h"
 
 #include <fcntl.h>
 #include <signal.h>
@@ -188,10 +189,11 @@ static int intif_saveregistry(struct map_session_data *sd)
 		if( varname[0] == '@' ) /* @string$ can get here, so we skip */
 			continue;
 
-		if (strlen(varname) > SCRIPT_VARNAME_LENGTH) {
-			ShowError("Variable name too big: %s\n", varname);
-			continue;
-		}
+		char name_escaped[SCRIPT_VARNAME_LENGTH + 1];
+
+		if (escape_variable_name(varname, name_escaped) == 0)
+			continue; // Non-conforming variable name.
+
 		src = DB->data2ptr(data);
 
 		/* no need! */
@@ -200,13 +202,18 @@ static int intif_saveregistry(struct map_session_data *sd)
 
 		src->update = false;
 
-		len = strlen(varname)+1;
+		len = strlen(varname);
 
-		WFIFOB(inter_fd, plen) = (unsigned char)len;/* won't be higher; the column size is 32 */
+		if (len > 255) {
+			ShowError("%s: Variable name %s is too long: %lu. Skipping...\n", __func__, varname, len);
+			continue;
+		}
+
+		WFIFOB(inter_fd, plen) = (unsigned char)len;
 		plen += 1;
 
-		safestrncpy(WFIFOP(inter_fd,plen), varname, len);
-		plen += len;
+		safestrncpy(WFIFOP(inter_fd, plen), varname, len + 1);
+		plen += len + 1;
 
 		WFIFOL(inter_fd, plen) = script_getvaridx(key.i64);
 		plen += 4;
@@ -1012,7 +1019,6 @@ static void intif_parse_Registers(int fd)
 	pc->reg_load = true;
 
 	if (RFIFOW(fd, 14) != 0) {
-		char key[SCRIPT_VARNAME_LENGTH+1];
 		unsigned int index;
 		int max = RFIFOW(fd, 14), cursor = 16, i;
 
@@ -1028,8 +1034,9 @@ static void intif_parse_Registers(int fd)
 			char sval[254];
 			for (i = 0; i < max; i++) {
 				int len = RFIFOB(fd, cursor);
-				safestrncpy(key, RFIFOP(fd, cursor + 1), min((int)sizeof(key), len));
-				cursor += len + 1;
+				char *key = aMalloc(len + 1);
+				safestrncpy(key, RFIFOP(fd, cursor + 1), len + 1);
+				cursor += len + 2;
 
 				index = RFIFOL(fd, cursor);
 				cursor += 4;
@@ -1039,6 +1046,8 @@ static void intif_parse_Registers(int fd)
 				cursor += len + 1;
 
 				script->set_reg(NULL,sd,reference_uid(script->add_variable(key), index), key, sval, NULL);
+
+				aFree(key);
 			}
 		/**
 		 * Vessel!
@@ -1051,8 +1060,9 @@ static void intif_parse_Registers(int fd)
 				int ival;
 
 				int len = RFIFOB(fd, cursor);
-				safestrncpy(key, RFIFOP(fd, cursor + 1), min((int)sizeof(key), len));
-				cursor += len + 1;
+				char *key = aMalloc(len + 1);
+				safestrncpy(key, RFIFOP(fd, cursor + 1), len + 1);
+				cursor += len + 2;
 
 				index = RFIFOL(fd, cursor);
 				cursor += 4;
@@ -1061,6 +1071,8 @@ static void intif_parse_Registers(int fd)
 				cursor += 4;
 
 				script->set_reg(NULL,sd,reference_uid(script->add_variable(key), index), key, (const void *)h64BPTRSIZE(ival), NULL);
+
+				aFree(key);
 			}
 		}
 		script->parser_current_file = NULL;/* reset */
