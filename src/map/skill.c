@@ -340,10 +340,12 @@ static int skill_get_sp_rate(int skill_id, int skill_lv, struct block_list *sour
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required state corresponding to the passed level. Defaults to ST_NONE (0) in case of error.
  *
  **/
-static int skill_get_state(int skill_id, int skill_lv)
+static int skill_get_state(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return ST_NONE;
@@ -6217,7 +6219,7 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 				break;
 			}
 		}
-		if (skill->get_state(ud->skill_id, ud->skill_lv) != ST_MOVE_ENABLE)
+		if (skill->get_state(ud->skill_id, ud->skill_lv, src, target) != ST_MOVE_ENABLE)
 			unit->set_walkdelay(src, tick, battle_config.default_walk_delay+skill->get_walkdelay(ud->skill_id, ud->skill_lv), 1);
 
 		if(battle_config.skill_log && battle_config.skill_log&src->type)

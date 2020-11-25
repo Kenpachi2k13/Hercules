@@ -2005,7 +2005,7 @@ struct skill_interface {
 	int (*get_sp) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_hp_rate) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_sp_rate) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_state) (int skill_id, int skill_lv);
+	int (*get_state) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_spiritball) (int skill_id, int skill_lv);
 	int (*get_item_index) (int skill_id, int skill_lv);
 	int (*get_itemid) (int skill_id, int item_idx);
