@@ -1801,7 +1801,7 @@ static void clif_homskillinfoblock(struct map_session_data *sd)
 			WFIFOL(fd, len + 2) = skill->get_inf(id);
 			WFIFOW(fd, len + 6) = hd->homunculus.hskill[j].lv;
 			if ( hd->homunculus.hskill[j].lv ) {
-				WFIFOW(fd, len + 8) = skill->get_sp(id, hd->homunculus.hskill[j].lv);
+				WFIFOW(fd, len + 8) = skill->get_sp(id, hd->homunculus.hskill[j].lv, &hd->bl, NULL);
 				WFIFOW(fd, len + 10) = skill->get_range2(&sd->hd->bl, id, hd->homunculus.hskill[j].lv);
 			} else {
 				WFIFOW(fd, len + 8) = 0;
@@ -1834,7 +1834,7 @@ static void clif_homskillup(struct map_session_data *sd, uint16 skill_id)
 	WFIFOW(fd,0) = 0x239;
 	WFIFOW(fd,2) = skill_id;
 	WFIFOW(fd,4) = hd->homunculus.hskill[idx].lv;
-	WFIFOW(fd,6) = skill->get_sp(skill_id,hd->homunculus.hskill[idx].lv);
+	WFIFOW(fd, 6) = skill->get_sp(skill_id, hd->homunculus.hskill[idx].lv, &hd->bl, NULL);
 	WFIFOW(fd,8) = skill->get_range2(&hd->bl, skill_id,hd->homunculus.hskill[idx].lv);
 	WFIFOB(fd,10) = (hd->homunculus.hskill[idx].lv < skill->get_max(hd->homunculus.hskill[idx].id)) ? 1 : 0;
 	WFIFOSET(fd,packet_len(0x239));
@@ -5310,7 +5310,7 @@ static void clif_playerSkillToPacket(struct map_session_data *sd, struct SKILLDA
 	skillData->inf = skill->get_inf(skillId);
 	skillData->level = skill_lv;
 	if (skill_lv > 0) {
-		skillData->sp = skill->get_sp(skillId, skill_lv);
+		skillData->sp = skill->get_sp(skillId, skill_lv, &sd->bl, NULL);
 		skillData->range2 = skill->get_range2(&sd->bl, skillId, skill_lv);
 	} else {
 		skillData->sp = 0;
@@ -5433,12 +5433,13 @@ static void clif_skillup(struct map_session_data *sd, uint16 skill_id, int skill
 	WFIFOW(fd, 0) = 0x10e;
 	WFIFOW(fd, 2) = skill_id;
 	WFIFOW(fd, 4) = skill_lv;
-	WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv);
 
 	if (flag != 0) {
+		WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
 		WFIFOW(fd, 8) = skill->get_range2(&sd->bl, skill_id, skill_lv);
 		WFIFOB(fd, 10) = (skill_lv < skill->tree_get_max(skill_id, sd->status.class)) ? 1 : 0;
 	} else {
+		WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv, NULL, NULL);
 		WFIFOW(fd, 8) = skill->get_range(skill_id, skill_lv, NULL, NULL);
 		WFIFOB(fd, 10) = 1;
 	}
@@ -5464,7 +5465,7 @@ static void clif_skillinfo(struct map_session_data *sd, int skill_id, int inf)
 	p->inf = inf?inf:skill->get_inf(skill_id);
 	p->level = skill_lv;
 	if (skill_lv > 0) {
-		p->sp = skill->get_sp(skill_id, skill_lv);
+		p->sp = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
 		p->range2 = skill->get_range2(&sd->bl, skill_id, skill_lv);
 	} else {
 		p->sp = 0;
@@ -6815,7 +6816,7 @@ static void clif_item_skill(struct map_session_data *sd, uint16 skill_id, uint16
 	p->skill_id = skill_id;
 	p->skill_type = type;
 	p->skill_lv = skill_lv;
-	p->skill_sp = skill->get_sp(skill_id, skill_lv);
+	p->skill_sp = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
 	p->skill_range = skill->get_range2(&sd->bl, skill_id, skill_lv);
 	safestrncpy(p->skill_name, skill->get_name(skill_id), NAME_LENGTH);
 	p->up_flag = 0;
@@ -8494,7 +8495,7 @@ static void clif_guild_skillinfo(struct map_session_data *sd)
 			WFIFOL(fd,p+2) = skill->get_inf(id);
 			WFIFOW(fd,p+6) = g->skill[i].lv;
 			if ( g->skill[i].lv ) {
-				WFIFOW(fd, p + 8) = skill->get_sp(id, g->skill[i].lv);
+				WFIFOW(fd, p + 8) = skill->get_sp(id, g->skill[i].lv, NULL, NULL);
 				WFIFOW(fd, p + 10) = skill->get_range(id, g->skill[i].lv, NULL, NULL);
 			} else {
 				WFIFOW(fd, p + 8) = 0;
@@ -18751,7 +18752,7 @@ static void clif_mercenary_skillblock(struct map_session_data *sd)
 		WFIFOL(fd,len+2) = skill->get_inf(id);
 		WFIFOW(fd,len+6) = md->db->skill[j].lv;
 		if ( md->db->skill[j].lv ) {
-			WFIFOW(fd, len + 8) = skill->get_sp(id, md->db->skill[j].lv);
+			WFIFOW(fd, len + 8) = skill->get_sp(id, md->db->skill[j].lv, &md->bl, NULL);
 			WFIFOW(fd, len + 10) = skill->get_range2(&md->bl, id, md->db->skill[j].lv);
 		} else {
 			WFIFOW(fd, len + 8) = 0;

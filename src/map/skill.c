@@ -290,7 +290,7 @@ static int skill_get_hp(int skill_id, int skill_lv, struct block_list *source, s
 	return skill->dbs->db[idx].hp[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_sp(int skill_id, int skill_lv)
+static int skill_get_sp(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -3247,7 +3247,7 @@ static int skill_attack(int attack_type, struct block_list *src, struct block_li
 		#endif /* MAGIC_REFLECTION_TYPE */
 		}
 		if (sc && sc->data[SC_MAGICROD] && src == dsrc) {
-			int sp = skill->get_sp(skill_id, skill_lv);
+			int sp = skill->get_sp(skill_id, skill_lv, src, bl);
 			dmg.damage = dmg.damage2 = 0;
 			dmg.dmg_lv = ATK_MISS; //This will prevent skill additional effect from taking effect. [Skotlex]
 			sp = sp * sc->data[SC_MAGICROD]->val2 / 100;
@@ -7855,7 +7855,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 					return 1;
 				}
 				if (sd->auto_cast_current.type == AUTOCAST_NONE)
-					status_zap(src, 0, skill->get_sp(skill_id, skill_lv)); // consume sp only if succeeded
+					status_zap(src, 0, skill->get_sp(skill_id, skill_lv, src, bl)); // consume sp only if succeeded
 			}
 			break;
 
@@ -8299,7 +8299,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
 			unit->skillcastcancel(src,1);
 			if(sd) {
-				int sp = skill->get_sp(sd->skill_id_old,sd->skill_lv_old);
+				int sp = skill->get_sp(sd->skill_id_old, sd->skill_lv_old, src, bl);
 				if( skill_id == SO_SPELLFIST ){
 					sc_start4(src,src,type,100,skill_lv+1,skill_lv,sd->skill_id_old,sd->skill_lv_old,skill->get_time(skill_id,skill_lv));
 					sd->skill_id_old = sd->skill_lv_old = 0;
@@ -8314,7 +8314,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			{
 				int sp;
 				if(tsc && tsc->data[SC_MAGICROD]) {
-					sp = skill->get_sp(skill_id,skill_lv);
+					sp = skill->get_sp(skill_id, skill_lv, src, bl);
 					sp = sp * tsc->data[SC_MAGICROD]->val2 / 100;
 					if(sp < 1) sp = 1;
 					status->heal(bl, 0, sp, STATUS_HEAL_SHOWEFFECT);
@@ -8338,7 +8338,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 
 					clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
 					unit->skillcastcancel(bl,0);
-					sp = skill->get_sp(bl_skill_id,bl_skill_lv);
+					sp = skill->get_sp(bl_skill_id, bl_skill_lv, bl, map->id2bl(ud->skilltarget));
 					status_zap(bl, hp, sp);
 
 					if (hp && skill_lv >= 5)
@@ -8920,7 +8920,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 					map->freeblock_unlock();
 					return 0;
 				}
-				status_zap(src, 0, skill->get_sp(skill_id, skill_lv)); // consume sp only if succeeded [Inkfish]
+				status_zap(src, 0, skill->get_sp(skill_id, skill_lv, src, bl)); // consume sp only if succeeded [Inkfish]
 				do {
 					int eff = rnd() % 14;
 					if( eff == 5 )

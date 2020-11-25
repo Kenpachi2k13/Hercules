@@ -1805,7 +1805,7 @@ static int battle_calc_skillratio(int attack_type, struct block_list *src, struc
 							skillratio = skill_lv * 400; //MATK [{( Skill Level x 400 ) x ( Caster's Base Level / 120 )} + 2500 ] %
 							RE_LVL_DMOD(120);
 							skillratio += 2500;
-							status_zap(&psd->bl, 0, skill->get_sp(skill_id, skill_lv) / 2);
+							status_zap(&psd->bl, 0, skill->get_sp(skill_id, skill_lv, src, target) / 2);
 						}
 					}
 					break;
@@ -6467,7 +6467,7 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 		if (i >= 50) skill_lv -= 2;
 		else if (i >= 15) skill_lv--;
 		if (skill_lv < 1) skill_lv = 1;
-		sp = skill->get_sp(skill_id,skill_lv) * 2 / 3;
+		sp = skill->get_sp(skill_id, skill_lv, src, target) * 2 / 3;
 
 		if (status->charge(src, 0, sp)) {
 			skill->castend_type(skill->get_casttype(skill_id), src, target, skill_id, skill_lv, tick, flag);
