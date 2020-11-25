@@ -1765,7 +1765,7 @@ static int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill
 	if( casttime <= 0 )
 		ud->state.skillcastcancel = 0;
 
-	if (sd == NULL || sd->auto_cast_current.type < AUTOCAST_ABRA || skill->get_cast(skill_id, skill_lv) != 0)
+	if (sd == NULL || sd->auto_cast_current.type < AUTOCAST_ABRA || skill->get_cast(skill_id, skill_lv, src, NULL) != 0)
 		ud->canact_tick = tick + casttime + 100;
 	if( sd )
 	{
@@ -1903,7 +1903,7 @@ static int unit_skilluse_pos2(struct block_list *src, short skill_x, short skill
 	}
 
 	ud->state.skillcastcancel = castcancel&&casttime>0?1:0;
-	if (sd == NULL || sd->auto_cast_current.type < AUTOCAST_ABRA || skill->get_cast(skill_id, skill_lv) != 0)
+	if (sd == NULL || sd->auto_cast_current.type < AUTOCAST_ABRA || skill->get_cast(skill_id, skill_lv, src, NULL) != 0)
 		ud->canact_tick  = tick + casttime + 100;
 #if 0
 	if (sd) {

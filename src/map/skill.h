@@ -2016,7 +2016,7 @@ struct skill_interface {
 	bool (*get_equip_any_flag) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_zeny) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_num) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_cast) (int skill_id, int skill_lv);
+	int (*get_cast) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_delay) (int skill_id, int skill_lv);
 	int (*get_walkdelay) (int skill_id, int skill_lv);
 	int (*get_time) (int skill_id, int skill_lv);

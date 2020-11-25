@@ -589,7 +589,7 @@ static int skill_get_num(int skill_id, int skill_lv, struct block_list *source, 
 	return skill->dbs->db[idx].num[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_cast(int skill_id, int skill_lv)
+static int skill_get_cast(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -16404,7 +16404,7 @@ static void skill_get_requirement_unknown(struct status_change *sc, struct map_s
  *------------------------------------------*/
 static int skill_castfix(struct block_list *bl, uint16 skill_id, uint16 skill_lv)
 {
-	int time = skill->get_cast(skill_id, skill_lv);
+	int time = skill->get_cast(skill_id, skill_lv, bl, NULL);
 
 	nullpo_ret(bl);
 #ifndef RENEWAL_CAST
