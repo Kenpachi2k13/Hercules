@@ -826,7 +826,7 @@ static int skill_get_msp(int skill_id, int skill_lv, struct block_list *source, 
 	return skill->dbs->db[idx].msp[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_castnodex(int skill_id, int skill_lv)
+static int skill_get_castnodex(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -16793,7 +16793,7 @@ static int skill_castfix(struct block_list *bl, uint16 skill_id, uint16 skill_lv
 		sd = BL_CAST(BL_PC, bl);
 
 		// calculate base cast time (reduced by dex)
-		if( !(skill->get_castnodex(skill_id, skill_lv)&1) ) {
+		if ((skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 1) == 0) {
 			int scale = battle_config.castrate_dex_scale - status_get_dex(bl);
 			if( scale > 0 ) // not instant cast
 				time = time * scale / battle_config.castrate_dex_scale;
@@ -16802,8 +16802,7 @@ static int skill_castfix(struct block_list *bl, uint16 skill_id, uint16 skill_lv
 		}
 
 		// calculate cast time reduced by item/card bonuses
-		if( !(skill->get_castnodex(skill_id, skill_lv)&4) && sd )
-		{
+		if ((skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 4) == 0 && sd != NULL) {
 			int i;
 			if( sd->castrate != 100 )
 				time = time * sd->castrate / 100;
@@ -16890,7 +16889,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 	}else if( fixed < 0 ) // no fixed cast time
 		fixed = 0;
 
-	if(sd  && !(skill->get_castnodex(skill_id, skill_lv)&4) ){ // Increases/Decreases fixed/variable cast time of a skill by item/card bonuses.
+	if (sd != NULL && (skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 4) == 0) { // Increases/Decreases fixed/variable cast time of a skill by item/card bonuses.
 		if( sd->bonus.varcastrate < 0 )
 			VARCAST_REDUCTION(sd->bonus.varcastrate);
 		if( sd->bonus.add_varcast != 0 ) // bonus bVariableCast
@@ -16920,7 +16919,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 			}
 	}
 
-	if (sc && sc->count && !(skill->get_castnodex(skill_id, skill_lv)&2) ) {
+	if (sc != NULL && sc->count != 0 && (skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 2) == 0) {
 		// All variable cast additive bonuses must come first
 		if (sc->data[SC_SLOWCAST])
 			VARCAST_REDUCTION(-sc->data[SC_SLOWCAST]->val2);
@@ -16993,7 +16992,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 			fixed -= 1000;
 	}
 
-	if( sd && !(skill->get_castnodex(skill_id, skill_lv)&4) ){
+	if (sd != NULL && (skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 4) == 0) {
 		VARCAST_REDUCTION( max(sd->bonus.varcastrate, 0) + max(i, 0) );
 		fixcast_r = max(fixcast_r, sd->bonus.fixcastrate) + min(sd->bonus.fixcastrate,0);
 		for( i = 0; i < ARRAYLENGTH(sd->skillcast) && sd->skillcast[i].id; i++ )
@@ -17006,7 +17005,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 
 	if( varcast_r < 0 ) // now compute overall factors
 		time = time * (1 - (float)varcast_r / 100);
-	if( !(skill->get_castnodex(skill_id, skill_lv)&1) )// reduction from status point
+	if ((skill->get_castnodex(skill_id, skill_lv, bl, NULL) & 1) == 0) // Reduction from status points.
 		time = (1 - sqrt( ((float)(status_get_dex(bl)*2 + status_get_int(bl)) / battle_config.vcast_stat_scale) )) * time;
 	// underflow checking/capping
 	time = max(time, 0) + (1 - (float)min(fixcast_r, 100) / 100) * max(fixed,0);

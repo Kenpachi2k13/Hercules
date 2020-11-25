@@ -1701,7 +1701,7 @@ static int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill
 
 	// moved here to prevent Suffragium from ending if skill fails
 #ifndef RENEWAL_CAST
-	if (!(skill->get_castnodex(skill_id, skill_lv)&2))
+	if ((skill->get_castnodex(skill_id, skill_lv, src, target) & 2) == 0)
 		casttime = skill->cast_fix_sc(src, casttime);
 #else
 	casttime = skill->vf_cast_fix(src, casttime, skill_id, skill_lv);
@@ -1892,7 +1892,7 @@ static int unit_skilluse_pos2(struct block_list *src, short skill_x, short skill
 
 	// moved here to prevent Suffragium from ending if skill fails
 #ifndef RENEWAL_CAST
-	if (!(skill->get_castnodex(skill_id, skill_lv)&2))
+	if ((skill->get_castnodex(skill_id, skill_lv, src, NULL) & 2) == 0)
 		casttime = skill->cast_fix_sc(src, casttime);
 #else
 	casttime = skill->vf_cast_fix(src, casttime, skill_id, skill_lv );
