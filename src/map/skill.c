@@ -698,7 +698,7 @@ static int skill_get_weapontype(int skill_id, struct block_list *source, struct 
 	return skill->dbs->db[idx].weapon;
 }
 
-static int skill_get_ammotype(int skill_id)
+static int skill_get_ammotype(int skill_id, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -15095,7 +15095,7 @@ static int skill_check_condition_castbegin(struct map_session_data *sd, uint16 s
 
 	if (pc_has_permission(sd, PC_PERM_SKILL_UNCONDITIONAL) && sd->auto_cast_current.type != AUTOCAST_ITEM) {
 		// GMs don't override the AUTOCAST_ITEM check, otherwise they can use items without them being consumed!
-		sd->state.arrow_atk = skill->get_ammotype(skill_id)?1:0; //Need to do arrow state check.
+		sd->state.arrow_atk = (skill->get_ammotype(skill_id, &sd->bl, NULL) != 0) ? 1 : 0; // Need to do arrow state check.
 		sd->spiritball_old = sd->spiritball; //Need to do Spiritball check.
 		return 1;
 	}
@@ -16177,7 +16177,7 @@ static int skill_check_condition_castend(struct map_session_data *sd, uint16 ski
 
 	if (pc_has_permission(sd, PC_PERM_SKILL_UNCONDITIONAL) && sd->auto_cast_current.type != AUTOCAST_ITEM) {
 		// GMs don't override the AUTOCAST_ITEM check, otherwise they can use items without them being consumed!
-		sd->state.arrow_atk = skill->get_ammotype(skill_id)?1:0; //Need to do arrow state check.
+		sd->state.arrow_atk = (skill->get_ammotype(skill_id, &sd->bl, NULL) != 0) ? 1 : 0; // Need to do arrow state check.
 		sd->spiritball_old = sd->spiritball; //Need to do Spiritball check.
 		return 1;
 	}

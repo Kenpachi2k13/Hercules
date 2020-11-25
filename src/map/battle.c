@@ -4489,11 +4489,10 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 		wd.blewcount += battle->blewcount_bonus(sd, skill_id);
 
 	//Set miscellaneous data that needs be filled regardless of hit/miss
-	if(
-		(sd && sd->state.arrow_atk) ||
-		(!sd && ((skill_id && skill->get_ammotype(skill_id)) || sstatus->rhw.range>3))
-	)
+	if ((sd == NULL && ((skill_id != 0 && skill->get_ammotype(skill_id, src, target) != 0) || sstatus->rhw.range > 3))
+	    || (sd != NULL && sd->state.arrow_atk != 0)) {
 		flag.arrow = 1;
+	}
 
 	if(skill_id) {
 		wd.flag |= battle->range_type(src, target, skill_id, skill_lv);
