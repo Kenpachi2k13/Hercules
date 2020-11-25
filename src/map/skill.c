@@ -275,7 +275,7 @@ static int skill_get_splash(int skill_id, int skill_lv, struct block_list *sourc
 	return val;
 }
 
-static int skill_get_hp(int skill_id, int skill_lv)
+static int skill_get_hp(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
