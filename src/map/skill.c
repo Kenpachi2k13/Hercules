@@ -416,10 +416,12 @@ static int skill_get_item_index(int skill_id, int skill_lv, struct block_list *s
  *
  * @param skill_id The skill's ID.
  * @param item_idx The item's index.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required item's ID corresponding to the passed index. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_itemid(int skill_id, int item_idx)
+static int skill_get_itemid(int skill_id, int item_idx, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -4090,7 +4092,7 @@ static int skill_check_condition_mercenary(struct block_list *bl, int skill_id, 
 
 	// Requirements
 	for (int i = 0; i < MAX_SKILL_ITEM_REQUIRE; i++) {
-		itemid[i] = skill->get_itemid(skill_id, i);
+		itemid[i] = skill->get_itemid(skill_id, i, bl, NULL);
 		amount[i] = skill->get_itemqty(skill_id, i, lv);
 	}
 	hp = skill->dbs->db[idx].hp[lv-1];
@@ -8044,7 +8046,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 						return 1;
 					}
 
-					int item_id = skill->get_itemid(skill_id, item_idx);
+					int item_id = skill->get_itemid(skill_id, item_idx, src, bl);
 					int inventory_idx = pc->search_inventory(sd, item_id);
 					if (inventory_idx == INDEX_NOT_FOUND || item_id <= 0) {
 						clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
@@ -8683,7 +8685,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 							int i;
 							// get back all items used to deploy the trap
 							for (i = 0; i < MAX_SKILL_ITEM_REQUIRE; i++) {
-								int nameid = skill->get_itemid(su->group->skill_id, i);
+								int nameid = skill->get_itemid(su->group->skill_id, i, src, bl);
 								if (nameid > 0) {
 									int success;
 									struct item item_tmp = { 0 };
@@ -11998,7 +12000,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 					return 1;
 				}
 
-				int item_id = skill->get_itemid(skill_id, item_idx);
+				int item_id = skill->get_itemid(skill_id, item_idx, src, NULL);
 				int inventory_idx = pc->search_inventory(sd, item_id);
 				int bonus;
 				if (inventory_idx == INDEX_NOT_FOUND || item_id <= 0
@@ -12035,7 +12037,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 				if (item_idx == INDEX_NOT_FOUND)
 					return 1;
 
-				int item_id = skill->get_itemid(skill_id, item_idx);
+				int item_id = skill->get_itemid(skill_id, item_idx, src, NULL);
 				struct item_data *item = itemdb->search(item_id);
 				int bonus;
 				script->potion_flag = 1;
@@ -16219,12 +16221,18 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 					continue;
 				break;
 			case AB_ADORAMUS:
-				if (itemid_isgemstone(skill->get_itemid(skill_id, i)) && skill->check_pc_partner(sd, skill_id, &skill_lv, 1, 2) != 0)
+				if (itemid_isgemstone(skill->get_itemid(skill_id, i, &sd->bl, NULL))
+				    && skill->check_pc_partner(sd, skill_id, &skill_lv, 1, 2) != 0) {
 					continue;
+				}
+
 				break;
 			case WL_COMET:
-				if (itemid_isgemstone(skill->get_itemid(skill_id, i)) && skill->check_pc_partner(sd, skill_id, &skill_lv, 1, 0) != 0)
+				if (itemid_isgemstone(skill->get_itemid(skill_id, i, &sd->bl, NULL))
+				    && skill->check_pc_partner(sd, skill_id, &skill_lv, 1, 0) != 0) {
 					continue;
+				}
+
 				break;
 			default:
 			{
@@ -16237,7 +16245,7 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 		int amount;
 
 		if ((amount = skill->get_itemqty(skill_id, i, skill_lv)) >= 0) {
-			req.itemid[i] = skill->get_itemid(skill_id, i);
+			req.itemid[i] = skill->get_itemid(skill_id, i, &sd->bl, NULL);
 			req.amount[i] = amount;
 		}
 

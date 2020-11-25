@@ -2008,7 +2008,7 @@ struct skill_interface {
 	int (*get_state) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_spiritball) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_item_index) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_itemid) (int skill_id, int item_idx);
+	int (*get_itemid) (int skill_id, int item_idx, struct block_list *source, struct block_list *target);
 	int (*get_itemqty) (int skill_id, int item_idx, int skill_lv);
 	bool (*get_item_any_flag) (int skill_id, int skill_lv);
 	int (*get_equip_id) (int skill_id, int item_idx);
