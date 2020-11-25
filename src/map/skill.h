@@ -2029,7 +2029,7 @@ struct skill_interface {
 	int (*get_ammo_qty) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_unit_id) (int skill_id, int skill_lv, int flag);
 	int (*get_inf2) (int skill_id);
-	int (*get_castcancel) (int skill_id, int skill_lv);
+	int (*get_castcancel) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_maxcount) (int skill_id, int skill_lv);
 	int (*get_blewcount) (int skill_id, int skill_lv);
 	int (*get_unit_flag) (int skill_id);
