@@ -807,10 +807,12 @@ static int skill_get_mhp(int skill_id, int skill_lv, struct block_list *source, 
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's maximum SP trigger corresponding to the passed level. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_msp(int skill_id, int skill_lv)
+static int skill_get_msp(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -4237,7 +4239,7 @@ static int skill_check_condition_mercenary(struct block_list *bl, int skill_id, 
 			return 0;
 		}
 
-		int msp = skill->get_msp(skill_id, lv);
+		int msp = skill->get_msp(skill_id, lv, bl, NULL);
 
 		if (msp > 0 && get_percentage(st->sp, st->max_sp) > msp) {
 			clif->skill_fail(sd, skill_id, USESKILL_FAIL_SP_INSUFFICIENT, 0, 0);
@@ -16588,7 +16590,7 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 
 	req.mhp = skill->dbs->db[idx].mhp[skill_lv-1];
 
-	req.msp = skill->get_msp(skill_id, skill_lv);
+	req.msp = skill->get_msp(skill_id, skill_lv, &sd->bl, NULL);
 
 	req.weapon = skill->dbs->db[idx].weapon;
 

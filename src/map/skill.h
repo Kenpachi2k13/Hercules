@@ -2001,7 +2001,7 @@ struct skill_interface {
 	int (*get_splash) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_hp) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_mhp) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_msp) (int skill_id, int skill_lv);
+	int (*get_msp) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_sp) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_hp_rate) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_sp_rate) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
