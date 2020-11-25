@@ -2020,7 +2020,7 @@ struct skill_interface {
 	int (*get_delay) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_walkdelay) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_time) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_time2) (int skill_id, int skill_lv);
+	int (*get_time2) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_castnodex) (int skill_id, int skill_lv);
 	int (*get_delaynodex) (int skill_id, int skill_lv);
 	int (*get_castdef) (int skill_id, int skill_lv);

@@ -2985,7 +2985,7 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 			clif->skill_nodamage(bl, bl, RK_MILLENNIUMSHIELD, 1, 1);
 			sce->val3 -= (int)cap_value(damage,INT_MIN,INT_MAX); // absorb damage
 			d->dmg_lv = ATK_BLOCK;
-			sc_start(src,bl,SC_STUN,15,0,skill->get_time2(RK_MILLENNIUMSHIELD,sce->val1)); // There is a chance to be stunned when one shield is broken.
+			sc_start(src, bl, SC_STUN, 15, 0, skill->get_time2(RK_MILLENNIUMSHIELD, sce->val1, src, bl)); // There is a chance to be stunned when one shield is broken.
 			if( sce->val3 <= 0 ) { // Shield Down
 				sce->val2--;
 				if( sce->val2 > 0 ) {
@@ -3232,7 +3232,8 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 				skill->break_equip(src, EQP_WEAPON, 3000, BCT_SELF);
 			// 30% chance to reduce monster's ATK by 25% for 10 seconds.
 			if( src->type == BL_MOB )
-				sc_start(bl,src, SC_NOEQUIPWEAPON, 30, 0, skill->get_time2(RK_STONEHARDSKIN, sce->val1));
+				sc_start(bl, src, SC_NOEQUIPWEAPON, 30, 0,
+					 skill->get_time2(RK_STONEHARDSKIN, sce->val1, src, bl));
 			if( sce->val2 <= 0 )
 				status_change_end(bl, SC_STONEHARDSKIN, INVALID_TIMER);
 		}
@@ -3354,7 +3355,12 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 				short rate = 100;
 				if ( s_sc->data[SC_POISONINGWEAPON]->val1 == 9 ) // Oblivion Curse gives a 2nd success chance after the 1st one passes which is reducible. [Rytech]
 					rate = 100 - tstatus->int_ * 4 / 5;
-				sc_start(src,bl,s_sc->data[SC_POISONINGWEAPON]->val2,rate,s_sc->data[SC_POISONINGWEAPON]->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
+
+				int time = skill->get_time2(GC_POISONINGWEAPON, 1, src, bl);
+
+				sc_start(src, bl, s_sc->data[SC_POISONINGWEAPON]->val2, rate,
+					 s_sc->data[SC_POISONINGWEAPON]->val1,
+					 time - (tstatus->vit + tstatus->luk) / 2 * 1000);
 			}
 		}
 		if( s_sc->data[SC__DEADLYINFECT] && flag&BF_SHORT && damage > 0 && rnd()%100 < 30 + 10 * s_sc->data[SC__DEADLYINFECT]->val1 && !is_boss(src) )
@@ -6303,7 +6309,7 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 	if( tsc && tsc->data[SC_BLADESTOP_WAIT] && !is_boss(src) && (src->type == BL_PC || tsd == NULL || distance_bl(src, target) <= (tsd->weapontype == W_FIST ? 1 : 2)) )
 	{
 		uint16 skill_lv = tsc->data[SC_BLADESTOP_WAIT]->val1;
-		int duration = skill->get_time2(MO_BLADESTOP,skill_lv);
+		int duration = skill->get_time2(MO_BLADESTOP, skill_lv, src, target);
 		status_change_end(target, SC_BLADESTOP_WAIT, INVALID_TIMER);
 		if(sc_start4(target, src, SC_BLADESTOP, 100, sd?pc->checkskill(sd, MO_BLADESTOP):5, 0, 0, target->id, duration)) {
 			//Target locked.
@@ -6359,7 +6365,8 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 	}
 
 	if(tsc && tsc->data[SC_KAAHI] && tsc->data[SC_KAAHI]->val4 == INVALID_TIMER && tstatus->hp < tstatus->max_hp)
-		tsc->data[SC_KAAHI]->val4 = timer->add(tick + skill->get_time2(SL_KAAHI,tsc->data[SC_KAAHI]->val1), status->kaahi_heal_timer, target->id, SC_KAAHI); //Activate heal.
+		tsc->data[SC_KAAHI]->val4 = timer->add(tick + skill->get_time2(SL_KAAHI, tsc->data[SC_KAAHI]->val1, src, target),
+						       status->kaahi_heal_timer, target->id, SC_KAAHI); // Activate heal.
 
 	wd = battle->calc_attack(BF_WEAPON, src, target, 0, 0, flag);
 

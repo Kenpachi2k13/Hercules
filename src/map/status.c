@@ -1294,7 +1294,7 @@ static int status_damage(struct block_list *src, struct block_list *target, int6
 
 	if( sc && sc->data[SC_KAIZEL] && !map_flag_gvg2(target->m) ) {
 		//flag&8 = disable Kaizel
-		int time = skill->get_time2(SL_KAIZEL,sc->data[SC_KAIZEL]->val1);
+		int time = skill->get_time2(SL_KAIZEL, sc->data[SC_KAIZEL]->val1, src, target);
 		//Look for Osiris Card's bonus effect on the character and revive 100% or revive normally
 		if ( target->type == BL_PC && BL_CAST(BL_PC,target)->special_state.restart_full_recover )
 			status->revive(target, 100, 100);
@@ -8413,7 +8413,8 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 
 			case SC_JOINTBEAT:
 				if( val2&BREAK_NECK )
-					sc_start2(src,bl,SC_BLOODING,100,val1,val3,skill->get_time2(status->sc2skill(type),val1));
+					sc_start2(src, bl, SC_BLOODING, 100, val1, val3,
+						  skill->get_time2(status->sc2skill(type), val1, src, bl));
 				break;
 
 			case SC_BERSERK:
@@ -8423,7 +8424,8 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 					sc_start4(src, bl, SC_ENDURE, 100,10,0,0,2, total_tick);
 				//HP healing is performing after the calc_status call.
 				//Val2 holds HP penalty
-				if (!val4) val4 = skill->get_time2(status->sc2skill(type),val1);
+				if (val4 == 0)
+					val4 = skill->get_time2(status->sc2skill(type), val1, src, bl);
 				if (!val4) val4 = 10000; //Val4 holds damage interval
 				val3 = total_tick/val4; //val3 holds skill duration
 				tick_time = val4; // [GodLesZ] tick time
@@ -11080,7 +11082,8 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 				 && DIFF_TICK(timer->gettick(), starttick) <= 1000
 				 && (!sd || (sd->weapontype1 == W_FIST && sd->weapontype2 == W_FIST))
 				)
-					sc_start(bl, bl,SC_STRUP,100,sce->val1,skill->get_time2(status->sc2skill(type), sce->val1));
+					sc_start(bl, bl, SC_STRUP, 100, sce->val1,
+						 skill->get_time2(status->sc2skill(type), sce->val1, bl, bl));
 			}
 			break;
 		case SC_AUTOBERSERK:
@@ -11266,7 +11269,8 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 			sc_start4(bl, bl, SC_GDSKILL_REGENERATION, 100, 10, 0, 0, RGN_HP | RGN_SP,
 				  skill->get_time(LK_BERSERK, sce->val1, bl, bl));
 			if( type == SC_SATURDAY_NIGHT_FEVER ) //Sit down force of Saturday Night Fever has the duration of only 3 seconds.
-				sc_start(bl,bl,SC_SITDOWN_FORCE,100,sce->val1,skill->get_time2(WM_SATURDAY_NIGHT_FEVER,sce->val1));
+				sc_start(bl, bl, SC_SITDOWN_FORCE, 100, sce->val1,
+					 skill->get_time2(WM_SATURDAY_NIGHT_FEVER, sce->val1, bl, bl));
 			break;
 		case SC_GOSPEL:
 			if (sce->val3) { //Clear the group.
@@ -11346,7 +11350,8 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 			clif->millenniumshield(bl,0);
 			break;
 		case SC_HALLUCINATIONWALK:
-			sc_start(bl,bl,SC_HALLUCINATIONWALK_POSTDELAY,100,sce->val1,skill->get_time2(GC_HALLUCINATIONWALK,sce->val1));
+			sc_start(bl, bl, SC_HALLUCINATIONWALK_POSTDELAY, 100, sce->val1,
+				 skill->get_time2(GC_HALLUCINATIONWALK, sce->val1, bl, bl));
 			break;
 		case SC_WHITEIMPRISON:
 			{
@@ -11437,7 +11442,8 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 			calc_flag = SCB_ALL;/* required for overlapping */
 			break;
 		case SC_FULL_THROTTLE:
-			sc_start(bl,bl,SC_REBOUND,100,sce->val1,skill->get_time2(ALL_FULL_THROTTLE,sce->val1));
+			sc_start(bl, bl, SC_REBOUND, 100, sce->val1,
+				 skill->get_time2(ALL_FULL_THROTTLE, sce->val1, bl, bl));
 			break;
 		case SC_MONSTER_TRANSFORM:
 			if( sce->val2 )
@@ -11988,9 +11994,12 @@ static int status_change_timer(int tid, int64 tick, int id, intptr_t data)
 				break; //Not enough SP to continue.
 
 			if (!sc->data[SC_CHASEWALK2]) {
-				sc_start(bl,bl, SC_CHASEWALK2,100,1<<(sce->val1-1),
-						 (sc->data[SC_SOULLINK] && sc->data[SC_SOULLINK]->val2 == SL_ROGUE?10:1) //SL bonus -> x10 duration
-						 * skill->get_time2(status->sc2skill(type),sce->val1));
+				int time = skill->get_time2(status->sc2skill(type), sce->val1, bl, bl);
+
+				if (sc->data[SC_SOULLINK] != NULL && sc->data[SC_SOULLINK]->val2 == SL_ROGUE)
+					time *= 10; //SL bonus -> x10 duration
+
+				sc_start(bl, bl, SC_CHASEWALK2, 100, 1 << (sce->val1 - 1), time);
 			}
 			sc_timer_next(sce->val2+tick, status->change_timer, bl->id, data);
 			return 0;

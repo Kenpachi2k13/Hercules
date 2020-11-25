@@ -7304,8 +7304,8 @@ typedef int (*HPMHOOK_pre_skill_get_walkdelay) (int *skill_id, int *skill_lv, st
 typedef int (*HPMHOOK_post_skill_get_walkdelay) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_time) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_time) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-typedef int (*HPMHOOK_pre_skill_get_time2) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_time2) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_time2) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_time2) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_castnodex) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_castnodex) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_get_delaynodex) (int *skill_id, int *skill_lv);

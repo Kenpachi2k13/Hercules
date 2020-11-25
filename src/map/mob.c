@@ -3932,7 +3932,7 @@ static int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 
 				mob_skills[i].permillage = 2000;
 
 				const int time1 = skill->get_time(skill_id, mob_skills[i].skill_lv, NULL, NULL);
-				const int time2 = skill->get_time2(skill_id, mob_skills[i].skill_lv);
+				const int time2 = skill->get_time2(skill_id, mob_skills[i].skill_lv, NULL, NULL);
 
 				/** Delay: Remove the stock 5 secs and add half of the support time. **/
 				mob_skills[i].delay += -5000 + (time1 + time2) / 2;
@@ -3951,7 +3951,7 @@ static int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 
 				mob_skills[i].cond2 = 1;
 
 			const int time1 = skill->get_time(skill_id, mob_skills[i].skill_lv, NULL, NULL);
-			const int time2 = skill->get_time2(skill_id, mob_skills[i].skill_lv);
+			const int time2 = skill->get_time2(skill_id, mob_skills[i].skill_lv, NULL, NULL);
 
 			/** Delay: Remove the stock 5 secs and add half of the support time. **/
 			mob_skills[i].delay += -5000 + (time1 + time2) / 2;
