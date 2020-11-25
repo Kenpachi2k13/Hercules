@@ -441,10 +441,12 @@ static int skill_get_itemid(int skill_id, int item_idx, struct block_list *sourc
  * @param skill_id The skill's ID.
  * @param item_idx The item's index.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required item's amount corresponding to the passed index and level. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_itemqty(int skill_id, int item_idx, int skill_lv)
+static int skill_get_itemqty(int skill_id, int item_idx, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -4093,7 +4095,7 @@ static int skill_check_condition_mercenary(struct block_list *bl, int skill_id, 
 	// Requirements
 	for (int i = 0; i < MAX_SKILL_ITEM_REQUIRE; i++) {
 		itemid[i] = skill->get_itemid(skill_id, i, bl, NULL);
-		amount[i] = skill->get_itemqty(skill_id, i, lv);
+		amount[i] = skill->get_itemqty(skill_id, i, lv, bl, NULL);
 	}
 	hp = skill->dbs->db[idx].hp[lv-1];
 	sp = skill->dbs->db[idx].sp[lv-1];
@@ -8053,7 +8055,8 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 						map->freeblock_unlock();
 						return 1;
 					}
-					if (sd->inventory_data[inventory_idx] == NULL || sd->status.inventory[inventory_idx].amount < skill->get_itemqty(skill_id, item_idx, skill_lv)) {
+					if (sd->inventory_data[inventory_idx] == NULL
+					    || sd->status.inventory[inventory_idx].amount < skill->get_itemqty(skill_id, item_idx, skill_lv, src, bl)) {
 						clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 						map->freeblock_unlock();
 						return 1;
@@ -8689,7 +8692,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 								if (nameid > 0) {
 									int success;
 									struct item item_tmp = { 0 };
-									int amount = skill->get_itemqty(su->group->skill_id, i, skill_lv);
+									int amount = skill->get_itemqty(su->group->skill_id, i, skill_lv, src, bl);
 									item_tmp.nameid = nameid;
 									item_tmp.identify = 1;
 									if ((success = pc->additem(sd, &item_tmp, amount, LOG_TYPE_SKILL)) != 0) {
@@ -12005,7 +12008,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 				int bonus;
 				if (inventory_idx == INDEX_NOT_FOUND || item_id <= 0
 				 || sd->inventory_data[inventory_idx] == NULL
-				 || sd->status.inventory[inventory_idx].amount < skill->get_itemqty(skill_id, item_idx, skill_lv)
+				 || sd->status.inventory[inventory_idx].amount < skill->get_itemqty(skill_id, item_idx, skill_lv, src, NULL)
 				) {
 					clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 					return 1;
@@ -16244,7 +16247,7 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 
 		int amount;
 
-		if ((amount = skill->get_itemqty(skill_id, i, skill_lv)) >= 0) {
+		if ((amount = skill->get_itemqty(skill_id, i, skill_lv, &sd->bl, NULL)) >= 0) {
 			req.itemid[i] = skill->get_itemid(skill_id, i, &sd->bl, NULL);
 			req.amount[i] = amount;
 		}
