@@ -490,10 +490,12 @@ static bool skill_get_item_any_flag(int skill_id, int skill_lv, struct block_lis
  *
  * @param skill_id The skill's ID.
  * @param item_idx The equipment item's index.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required equipment's ID corresponding to the passed index. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_equip_id(int skill_id, int item_idx)
+static int skill_get_equip_id(int skill_id, int item_idx, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -16255,7 +16257,7 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 		}
 
 		if ((amount = skill->get_equip_amount(skill_id, i, skill_lv)) > 0) {
-			req.equip_id[i] = skill->get_equip_id(skill_id, i);
+			req.equip_id[i] = skill->get_equip_id(skill_id, i, &sd->bl, NULL);
 			req.equip_amount[i] = amount;
 		}
 
