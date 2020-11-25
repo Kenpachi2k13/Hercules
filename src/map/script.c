@@ -13088,9 +13088,15 @@ static BUILDIN(sc_start)
 	else
 		bl = map->id2bl(st->rid);
 
-	if(tick == 0 && val1 > 0 && type > SC_NONE && type < SC_MAX && status->sc2skill(type) != 0)
-	{// When there isn't a duration specified, try to get it from the skill_db
-		tick = skill->get_time(status->sc2skill(type), val1);
+	// When there isn't a duration specified, try to get it from the skill DB.
+	if (tick == 0 && val1 > 0 && type > SC_NONE && type < SC_MAX && status->sc2skill(type) != 0) {
+		struct block_list *source = (nd != NULL) ? &nd->bl : NULL;
+		struct block_list *target = bl;
+
+		if (script->potion_flag == 1 && script->potion_target != 0)
+			target = map->id2bl(script->potion_target);
+
+		tick = skill->get_time(status->sc2skill(type), val1, source, target);
 	}
 
 	if(script->potion_flag == 1 && script->potion_target) { //skill.c set the flags before running the script, this is a potion-pitched effect.

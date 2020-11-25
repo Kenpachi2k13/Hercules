@@ -7977,7 +7977,8 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 			case SC_KSPROTECTED:
 				break; // Prevent calling status_change_start_unknown_sc().
 			case SC_ADORAMUS:
-				sc_start(src,bl,SC_BLIND,100,val1,skill->get_time(status->sc2skill(type),val1));
+				sc_start(src, bl, SC_BLIND, 100, val1,
+					 skill->get_time(status->sc2skill(type), val1, src, bl));
 				// Fall through to SC_INC_AGI
 				FALLTHROUGH
 			case SC_DEC_AGI:
@@ -8528,9 +8529,13 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 					while (i >= 0) {
 						enum sc_type type2 = types[i];
 						if (d_sc->data[type2]) {
-							status->change_start(bl, bl, type2, 10000, d_sc->data[type2]->val1, 0, 0, 0,
-							                     skill->get_time(status->sc2skill(type2),d_sc->data[type2]->val1),
-							                     (type2 != SC_DEFENDER) ? SCFLAG_NOICON : SCFLAG_NONE);
+							int sc_time = skill->get_time(status->sc2skill(type2),
+										      d_sc->data[type2]->val1,
+										      bl, d_bl);
+							int sc_flag = (type2 != SC_DEFENDER) ? SCFLAG_NOICON : SCFLAG_NONE;
+
+							status->change_start(bl, bl, type2, 10000, d_sc->data[type2]->val1,
+									     0, 0, 0, sc_time, sc_flag);
 						}
 						i--;
 					}
@@ -11258,7 +11263,8 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 				sc->data[SC_ENDURE]->val4 = 0;
 				status_change_end(bl, SC_ENDURE, INVALID_TIMER);
 			}
-			sc_start4(bl, bl, SC_GDSKILL_REGENERATION, 100, 10,0,0,(RGN_HP|RGN_SP), skill->get_time(LK_BERSERK, sce->val1));
+			sc_start4(bl, bl, SC_GDSKILL_REGENERATION, 100, 10, 0, 0, RGN_HP | RGN_SP,
+				  skill->get_time(LK_BERSERK, sce->val1, bl, bl));
 			if( type == SC_SATURDAY_NIGHT_FEVER ) //Sit down force of Saturday Night Fever has the duration of only 3 seconds.
 				sc_start(bl,bl,SC_SITDOWN_FORCE,100,sce->val1,skill->get_time2(WM_SATURDAY_NIGHT_FEVER,sce->val1));
 			break;
@@ -13521,7 +13527,7 @@ static int status_natural_heal(struct block_list *bl, va_list args)
 
 				int rate;
 				if ((rate = pc->checkskill(sd,TK_SPTIME)) != 0)
-					sc_start(bl, bl, status->skill2sc(TK_SPTIME), 100, rate, skill->get_time(TK_SPTIME, rate));
+					sc_start(bl, bl, status->skill2sc(TK_SPTIME), 100, rate, skill->get_time(TK_SPTIME, rate, bl, bl));
 
 				if ((sd->job & MAPID_UPPERMASK) == MAPID_STAR_GLADIATOR
 					&& rnd() % 10000 < battle_config.sg_angel_skill_ratio) { //Angel of the Sun/Moon/Star

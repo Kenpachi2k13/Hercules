@@ -3317,7 +3317,8 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 
 		if (t_sd && damage > 0 && (sce = sc->data[SC_GENTLETOUCH_ENERGYGAIN]) != NULL) {
 			if ( rnd() % 100 < sce->val2 )
-				pc->addspiritball(t_sd, skill->get_time(MO_CALLSPIRITS, 1), pc->getmaxspiritball(t_sd, 0));
+				pc->addspiritball(t_sd, skill->get_time(MO_CALLSPIRITS, 1, src, bl),
+						  pc->getmaxspiritball(t_sd, 0));
 		}
 	}
 
@@ -3366,7 +3367,8 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 		}
 		if (src->type == BL_PC && damage > 0 && (sce = s_sc->data[SC_GENTLETOUCH_ENERGYGAIN]) != NULL) {
 			if (s_sd != NULL && rnd() % 100 < sce->val2)
-				pc->addspiritball(s_sd, skill->get_time(MO_CALLSPIRITS, 1), pc->getmaxspiritball(s_sd, 0));
+				pc->addspiritball(s_sd, skill->get_time(MO_CALLSPIRITS, 1, src, bl),
+						  pc->getmaxspiritball(s_sd, 0));
 		}
 	}
 	/* no data claims these settings affect anything other than players */
@@ -6352,7 +6354,8 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 
 		if( tsc && tsc->data[SC_MTF_MLEATKED] && rnd()%100 < 20 )
 			clif->skill_nodamage(target, target, SM_ENDURE, 5,
-				sc_start(target,target, SC_ENDURE, 100, 5, skill->get_time(SM_ENDURE, 5)));
+					     sc_start(target, target, SC_ENDURE, 100, 5,
+						      skill->get_time(SM_ENDURE, 5, src, target)));
 	}
 
 	if(tsc && tsc->data[SC_KAAHI] && tsc->data[SC_KAAHI]->val4 == INVALID_TIMER && tstatus->hp < tstatus->max_hp)
