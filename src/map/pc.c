@@ -346,14 +346,14 @@ static int pc_check_banding(struct block_list *bl, va_list ap)
 }
 static int pc_banding(struct map_session_data *sd, uint16 skill_lv)
 {
+	nullpo_ret(sd);
+
 	int c;
 	int b_sd[MAX_PARTY]; // In case of a full Royal Guard party.
 	int i, j, hp, extra_hp = 0, tmp_qty = 0;
 	struct map_session_data *bsd;
 	struct status_change *sc;
-	int range = skill->get_splash(LG_BANDING,skill_lv);
-
-	nullpo_ret(sd);
+	int range = skill->get_splash(LG_BANDING, skill_lv, &sd->bl, NULL);
 
 	c = 0;
 	memset(b_sd, 0, sizeof(b_sd));

@@ -8326,7 +8326,7 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 			case SC_SIGHT: /* splash status */
 			case SC_RUWACH:
 			case SC_WZ_SIGHTBLASTER:
-				val3 = skill->get_splash(val2, val1); //Val2 should bring the skill-id.
+				val3 = skill->get_splash(val2, val1, src, bl); // Val2 should bring the skill-id.
 				val2 = total_tick/20;
 				tick_time = 20; // [GodLesZ] tick time
 				break;

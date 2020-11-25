@@ -7260,8 +7260,8 @@ typedef int (*HPMHOOK_pre_skill_get_range) (int *skill_id, int *skill_lv, struct
 typedef int (*HPMHOOK_post_skill_get_range) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_range2) (struct block_list **bl, int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_range2) (int retVal___, struct block_list *bl, int skill_id, int skill_lv);
-typedef int (*HPMHOOK_pre_skill_get_splash) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_splash) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_splash) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_splash) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_hp) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_hp) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_get_mhp) (int *skill_id, int *skill_lv);

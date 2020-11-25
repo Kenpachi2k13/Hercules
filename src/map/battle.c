@@ -1836,8 +1836,18 @@ static int battle_calc_skillratio(int attack_type, struct block_list *src, struc
 				{
 					uint16 lv = skill_lv;
 					int bandingBonus = 0;
-					if( sc && sc->data[SC_BANDING] )
-						bandingBonus = 200 * (sd ? skill->check_pc_partner(sd,skill_id,&lv,skill->get_splash(skill_id,skill_lv),0) : 1);
+
+					if (sc != NULL && sc->data[SC_BANDING] != NULL) {
+						bandingBonus = 200;
+
+						if (sd != NULL) {
+							int splash = skill->get_splash(skill_id, skill_lv, src, target);
+
+							bandingBonus *= skill->check_pc_partner(sd, skill_id, &lv,
+												splash, 0);
+						}
+					}
+
 					skillratio = ((300 * skill_lv) + bandingBonus) * (sd ? sd->status.job_level : 1) / 25;
 				}
 					break;
@@ -5983,7 +5993,11 @@ static void battle_reflect_damage(struct block_list *target, struct block_list *
 						sd->auto_cast_current.type = AUTOCAST_TEMP;
 					}
 
-					map->foreachinshootrange(battle->damage_area,target,skill->get_splash(LG_REFLECTDAMAGE,1),BL_CHAR,tick,target,delay,wd->dmotion,rdamage,status_get_race(target));
+					int splash = skill->get_splash(LG_REFLECTDAMAGE, 1, src, target);
+
+					map->foreachinshootrange(battle->damage_area, target, splash, BL_CHAR, tick,
+								 target, delay, wd->dmotion, rdamage,
+								 status_get_race(target));
 
 					if (sd != NULL)
 						sd->auto_cast_current.type = ac_type;
