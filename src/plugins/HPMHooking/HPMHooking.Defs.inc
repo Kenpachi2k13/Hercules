@@ -7316,8 +7316,8 @@ typedef int (*HPMHOOK_pre_skill_get_weapontype) (int *skill_id, struct block_lis
 typedef int (*HPMHOOK_post_skill_get_weapontype) (int retVal___, int skill_id, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_ammotype) (int *skill_id, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_ammotype) (int retVal___, int skill_id, struct block_list *source, struct block_list *target);
-typedef int (*HPMHOOK_pre_skill_get_ammo_qty) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_ammo_qty) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_ammo_qty) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_ammo_qty) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_unit_id) (int *skill_id, int *skill_lv, int *flag);
 typedef int (*HPMHOOK_post_skill_get_unit_id) (int retVal___, int skill_id, int skill_lv, int flag);
 typedef int (*HPMHOOK_pre_skill_get_inf2) (int *skill_id);

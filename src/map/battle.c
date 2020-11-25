@@ -3565,7 +3565,7 @@ static void battle_consume_ammo(struct map_session_data *sd, int skill_id, int l
 		return;
 
 	if (skill_id && lv) {
-		qty = skill->get_ammo_qty(skill_id, lv);
+		qty = skill->get_ammo_qty(skill_id, lv, &sd->bl, NULL);
 		if (!qty) qty = 1;
 	}
 

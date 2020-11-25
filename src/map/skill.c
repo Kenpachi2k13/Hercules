@@ -708,7 +708,7 @@ static int skill_get_ammotype(int skill_id, struct block_list *source, struct bl
 	return skill->dbs->db[idx].ammo;
 }
 
-static int skill_get_ammo_qty(int skill_id, int skill_lv)
+static int skill_get_ammo_qty(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
