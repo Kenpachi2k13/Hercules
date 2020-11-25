@@ -305,7 +305,7 @@ static int skill_get_sp(int skill_id, int skill_lv, struct block_list *source, s
 	return skill->dbs->db[idx].sp[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_hp_rate(int skill_id, int skill_lv)
+static int skill_get_hp_rate(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -8608,7 +8608,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 
 		case WE_MALE:
 		{
-			int hp_rate = skill_lv == 0 ? 0 : skill->get_hp_rate(skill_id, skill_lv);
+			int hp_rate = (skill_lv == 0) ? 0 : skill->get_hp_rate(skill_id, skill_lv, src, bl);
 			int gain_hp = tstatus->max_hp*abs(hp_rate)/100; // The earned is the same % of the target HP than it cost the caster. [Skotlex]
 			clif->skill_nodamage(src, bl, skill_id, status->heal(bl, gain_hp, 0, STATUS_HEAL_DEFAULT), 1);
 		}
