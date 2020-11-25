@@ -466,10 +466,12 @@ static int skill_get_itemqty(int skill_id, int item_idx, int skill_lv, struct bl
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required items any-flag corresponding to the passed level. Defaults to false in case of error.
  *
  **/
-static bool skill_get_item_any_flag(int skill_id, int skill_lv)
+static bool skill_get_item_any_flag(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return false;
@@ -15685,7 +15687,7 @@ static int skill_check_condition_required_items(struct map_session_data *sd, int
 
 	struct skill_condition req = skill->get_requirement(sd, skill_id, skill_lv);
 
-	if (skill->get_item_any_flag(skill_id, skill_lv)) {
+	if (skill->get_item_any_flag(skill_id, skill_lv, &sd->bl, NULL)) {
 		for (int i = 0; i < MAX_SKILL_ITEM_REQUIRE; i++) {
 			if (req.itemid[i] == 0)
 				continue;
@@ -15970,7 +15972,7 @@ static int skill_get_any_item_index(struct map_session_data *sd, int skill_id, i
 
 	int any_item_index = INDEX_NOT_FOUND;
 
-	if (skill->get_item_any_flag(skill_id, skill_lv)) {
+	if (skill->get_item_any_flag(skill_id, skill_lv, &sd->bl, NULL)) {
 		struct skill_condition req = skill->get_requirement(sd, skill_id, skill_lv);
 
 		for (int i = 0; i < MAX_SKILL_ITEM_REQUIRE; i++) {
