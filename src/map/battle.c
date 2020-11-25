@@ -3650,7 +3650,7 @@ static struct Damage battle_calc_magic_attack(struct block_list *src, struct blo
 
 	//Initial Values
 	ad.damage = 1;
-	ad.div_=skill->get_num(skill_id,skill_lv);
+	ad.div_ = skill->get_num(skill_id, skill_lv, src, target);
 	ad.amotion = (skill->get_inf(skill_id)&INF_GROUND_SKILL) ? 0 : sstatus->amotion; //Amotion should be 0 for ground skills.
 	ad.dmotion=tstatus->dmotion;
 	ad.blewcount = skill->get_blewcount(skill_id,skill_lv);
@@ -3989,7 +3989,7 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 	//Some initial values
 	md.amotion = (skill->get_inf(skill_id)&INF_GROUND_SKILL) ? 0 : sstatus->amotion;
 	md.dmotion=tstatus->dmotion;
-	md.div_=skill->get_num( skill_id,skill_lv );
+	md.div_ = skill->get_num(skill_id, skill_lv, src, target);
 	md.blewcount=skill->get_blewcount(skill_id,skill_lv);
 	md.dmg_lv=ATK_DEF;
 	md.flag=BF_MISC|BF_SKILL;
@@ -4047,7 +4047,7 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 
 		if (skill_id == SN_FALCONASSAULT) {
 			//Div fix of Blitzbeat
-			temp = skill->get_num(HT_BLITZBEAT, 5);
+			temp = skill->get_num(HT_BLITZBEAT, 5, src, target);
 			damage_div_fix(md.damage, temp);
 
 			//Falcon Assault Modifier
@@ -4452,7 +4452,7 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 
 	//Initial Values
 	wd.type = BDT_NORMAL;
-	wd.div_ = skill_id ? skill->get_num(skill_id,skill_lv) : 1;
+	wd.div_ = (skill_id != 0) ? skill->get_num(skill_id, skill_lv, src, target) : 1;
 	wd.amotion=(skill_id && skill->get_inf(skill_id)&INF_GROUND_SKILL)?0:sstatus->amotion; //Amotion should be 0 for ground skills.
 	if(skill_id == KN_AUTOCOUNTER)
 		wd.amotion >>= 1;
@@ -4653,13 +4653,13 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 			//Success chance is not added, the higher one is used [Skotlex]
 			if( rnd()%100 < ( 5*skill_lv > sd->bonus.double_rate ? 5*skill_lv : sc && sc->data[SC_KAGEMUSYA]?sc->data[SC_KAGEMUSYA]->val1*3:sd->bonus.double_rate ) )
 			{
-				wd.div_ = skill->get_num(TF_DOUBLE,skill_lv?skill_lv:1);
+				wd.div_ = skill->get_num(TF_DOUBLE, (skill_lv != 0) ? skill_lv : 1, src, target);
 				wd.type = BDT_MULTIHIT;
 			}
 		}
 		else if( sd->weapontype1 == W_REVOLVER && (skill_lv = pc->checkskill(sd,GS_CHAINACTION)) > 0 && rnd()%100 < 5*skill_lv )
 		{
-			wd.div_ = skill->get_num(GS_CHAINACTION,skill_lv);
+			wd.div_ = skill->get_num(GS_CHAINACTION, skill_lv, src, target);
 			wd.type = BDT_MULTIHIT;
 		}
 		else if(sc && sc->data[SC_FEARBREEZE] && sd->weapontype1==W_BOW

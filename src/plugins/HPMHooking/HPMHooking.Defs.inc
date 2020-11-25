@@ -7294,8 +7294,8 @@ typedef bool (*HPMHOOK_pre_skill_get_equip_any_flag) (int *skill_id, int *skill_
 typedef bool (*HPMHOOK_post_skill_get_equip_any_flag) (bool retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_zeny) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_zeny) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-typedef int (*HPMHOOK_pre_skill_get_num) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_num) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_num) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_num) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_cast) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_cast) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_get_delay) (int *skill_id, int *skill_lv);

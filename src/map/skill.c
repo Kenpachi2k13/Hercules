@@ -574,7 +574,7 @@ static int skill_get_zeny(int skill_id, int skill_lv, struct block_list *source,
 	return skill->dbs->db[idx].zeny[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_num(int skill_id, int skill_lv)
+static int skill_get_num(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -5983,7 +5983,7 @@ static bool skill_castend_damage_id_unknown(struct block_list *src, struct block
 	nullpo_retr(true, tstatus);
 	ShowWarning("skill_castend_damage_id: Unknown skill used:%d\n", *skill_id);
 	clif->skill_damage(src, bl, *tick, status_get_amotion(src), tstatus->dmotion,
-		0, abs(skill->get_num(*skill_id, *skill_lv)),
+		0, abs(skill->get_num(*skill_id, *skill_lv, src, bl)),
 		*skill_id, *skill_lv, skill->get_hit(*skill_id, *skill_lv, src, bl));
 	map->freeblock_unlock();
 	return true;
