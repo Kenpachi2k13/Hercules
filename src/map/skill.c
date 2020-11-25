@@ -604,7 +604,7 @@ static int skill_get_cast(int skill_id, int skill_lv, struct block_list *source,
 	return skill->dbs->db[idx].cast[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_delay(int skill_id, int skill_lv)
+static int skill_get_delay(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -4945,7 +4945,8 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 		case SU_BITE:
 			skill->attack(BF_WEAPON, src, src, bl, skill_id, skill_lv, tick, flag);
 			if (status->get_lv(src) >= 30 && (rnd() % 100 < (int)(status->get_lv(src) / 30) + 10)) // TODO: Need activation chance.
-				skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv), bl->id, 0, 0, skill_id, skill_lv, BF_WEAPON, flag);
+				skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv, src, bl), bl->id,
+						     0, 0, skill_id, skill_lv, BF_WEAPON, flag);
 			break;
 
 		case SU_PICKYPECK:
@@ -5027,7 +5028,8 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 					status->heal(src, heal, 0, STATUS_HEAL_DEFAULT);
 				}
 				if (skill_id == SU_SCRATCH && status->get_lv(src) >= 30 && (rnd() % 100 < (int)(status->get_lv(src) / 30) + 10)) // TODO: Need activation chance.
-					skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv), bl->id, 0, 0, skill_id, skill_lv, BF_WEAPON, flag);
+					skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv, src, bl),
+							     bl->id, 0, 0, skill_id, skill_lv, BF_WEAPON, flag);
 			} else {
 				switch ( skill_id ) {
 					case NJ_BAKUENRYU:
@@ -5926,7 +5928,9 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 		case SU_SV_STEMSPEAR:
 			skill->attack(skill->get_type(skill_id, skill_lv), src, src, bl, skill_id, skill_lv, tick, flag);
 			if (status->get_lv(src) >= 30 && (rnd() % 100 < (int)(status->get_lv(src) / 30) + 10)) // TODO: Need activation chance.
-				skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv), bl->id, 0, 0, skill_id, skill_lv, (skill_id == SU_SV_STEMSPEAR) ? BF_MAGIC : BF_WEAPON, flag);
+				skill->addtimerskill(src, tick + skill->get_delay(skill_id, skill_lv, src, bl), bl->id,
+						     0, 0, skill_id, skill_lv,
+						     (skill_id == SU_SV_STEMSPEAR) ? BF_MAGIC : BF_WEAPON, flag);
 			break;
 		case SU_SCAROFTAROU:
 			sc_start(src, bl, status->skill2sc(skill_id), 10, skill_lv, skill->get_time(skill_id, skill_lv)); // TODO: What's the activation chance for the effect?
@@ -6200,8 +6204,11 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 		if (ud->walktimer != INVALID_TIMER && ud->skill_id != TK_RUN && ud->skill_id != RA_WUGDASH)
 			unit->stop_walking(src, STOPWALKING_FLAG_FIXPOS);
 
-		if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id || skill->get_delay(ud->skill_id, ud->skill_lv) != 0)
+		if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id
+		    || skill->get_delay(ud->skill_id, ud->skill_lv, src, target) != 0) {
 			ud->canact_tick = tick + skill->delay_fix(src, ud->skill_id, ud->skill_lv); // Tests show wings don't overwrite the delay but skill scrolls do. [Inkfish]
+		}
+
 		if (sd) { // Cooldown application
 			int i, cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv);
 			for (i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
@@ -6320,8 +6327,11 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 		}
 	}
 
-	if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id || skill->get_delay(ud->skill_id, ud->skill_lv) != 0)
+	if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id
+	    || skill->get_delay(ud->skill_id, ud->skill_lv, src, target) != 0) {
 		ud->canact_tick = tick;
+	}
+
 	//You can't place a skill failed packet here because it would be
 	//sent in ALL cases, even cases where skill_check_condition fails
 	//which would lead to double 'skill failed' messages u.u [Skotlex]
@@ -11347,8 +11357,11 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 		if (ud->walktimer != INVALID_TIMER)
 			unit->stop_walking(src, STOPWALKING_FLAG_FIXPOS);
 
-		if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id || skill->get_delay(ud->skill_id, ud->skill_lv) != 0)
+		if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id
+		    || skill->get_delay(ud->skill_id, ud->skill_lv, src, NULL) != 0) {
 			ud->canact_tick = tick + skill->delay_fix(src, ud->skill_id, ud->skill_lv);
+		}
+
 		if (sd) { //Cooldown application
 			int i, cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv);
 			for (i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
@@ -11391,8 +11404,10 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 		return 1;
 	} while(0);
 
-	if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id || skill->get_delay(ud->skill_id, ud->skill_lv) != 0)
+	if (sd == NULL || sd->auto_cast_current.skill_id != ud->skill_id
+	    || skill->get_delay(ud->skill_id, ud->skill_lv, src, NULL) != 0) {
 		ud->canact_tick = tick;
+	}
 
 	if (sd != NULL && ud->skill_id == sd->auto_cast_current.skill_id)
 		pc->autocast_remove(sd, sd->auto_cast_current.type, ud->skill_id, ud->skill_lv);
@@ -16641,7 +16656,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 static int skill_delay_fix(struct block_list *bl, uint16 skill_id, uint16 skill_lv)
 {
 	int delaynodex = skill->get_delaynodex(skill_id, skill_lv);
-	int time = skill->get_delay(skill_id, skill_lv);
+	int time = skill->get_delay(skill_id, skill_lv, bl, NULL);
 	struct map_session_data *sd;
 	struct status_change *sc = status->get_sc(bl);
 
