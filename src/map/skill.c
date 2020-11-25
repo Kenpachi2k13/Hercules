@@ -222,7 +222,7 @@ static int skill_get_ele(int skill_id, int skill_lv, struct block_list *source, 
 	return skill->dbs->db[idx].element[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_nk(int skill_id)
+static int skill_get_nk(int skill_id, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -1044,7 +1044,7 @@ static int skill_get_casttype(int skill_id)
 			return CAST_DAMAGE; //Combo skill.
 		return CAST_NODAMAGE;
 	}
-	if (skill->get_nk(skill_id)&NK_NO_DAMAGE)
+	if ((skill->get_nk(skill_id, NULL, NULL) & NK_NO_DAMAGE) != 0)
 		return CAST_NODAMAGE;
 	return CAST_DAMAGE;
 }
@@ -2707,7 +2707,7 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 	) {
 		// Soul Drain should only work on targeted spells [Skotlex]
 		if( pc_issit(sd) ) pc->setstand(sd); // Character stuck in attacking animation while 'sitting' fix. [Skotlex]
-		if (skill->get_nk(skill_id)&NK_SPLASH && skill->area_temp[1] != bl->id) {
+		if ((skill->get_nk(skill_id, src, bl) & NK_SPLASH) != 0 && skill->area_temp[1] != bl->id) {
 			;
 		} else {
 			clif->skill_nodamage(src,bl,HW_SOULDRAIN,rate,1);
@@ -2741,7 +2741,8 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 	}
 
 	// Trigger counter-spells to retaliate against damage causing skills.
-	if(dstsd && !status->isdead(bl) && dstsd->autospell2[0].id && !(skill_id && skill->get_nk(skill_id)&NK_NO_DAMAGE)) {
+	if (dstsd != NULL && status->isdead(bl) == 0 && dstsd->autospell2[0].id != 0
+	    && !(skill_id != 0 && (skill->get_nk(skill_id, src, bl) & NK_NO_DAMAGE) != 0)) {
 		struct block_list *tbl;
 		struct unit_data *ud;
 		int i, auto_skill_id, auto_skill_lv, type, notok;
@@ -2828,7 +2829,8 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 	}
 
 	//Autobonus when attacked
-	if( dstsd && !status->isdead(bl) && dstsd->autobonus2[0].rate && !(skill_id && skill->get_nk(skill_id)&NK_NO_DAMAGE) ) {
+	if (dstsd != NULL && status->isdead(bl) == 0 && dstsd->autobonus2[0].rate != 0
+	    && !(skill_id != 0 && (skill->get_nk(skill_id, src, bl) & NK_NO_DAMAGE) != 0)) {
 		int i;
 		for( i = 0; i < ARRAYLENGTH(dstsd->autobonus2); i++ ) {
 			if( rnd()%1000 >= dstsd->autobonus2[i].rate )
@@ -3119,7 +3121,7 @@ static int skill_attack(int attack_type, struct block_list *src, struct block_li
 		//When caster is not the src of attack, this is a ground skill, and as such, do the relevant target checking. [Skotlex]
 		if (!status->check_skilluse(battle_config.skill_caster_check?src:NULL, bl, skill_id, 2))
 			return 0;
-	} else if ((flag&SD_ANIMATION) && skill->get_nk(skill_id)&NK_SPLASH) {
+	} else if ((flag & SD_ANIMATION) != 0 && (skill->get_nk(skill_id, src, bl) & NK_SPLASH) != 0) {
 		//Note that splash attacks often only check versus the targeted mob, those around the splash area normally don't get checked for being hidden/cloaked/etc. [Skotlex]
 		if (!status->check_skilluse(src, bl, skill_id, 2))
 			return 0;
@@ -5043,7 +5045,7 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 				// if skill damage should be split among targets, count them
 				//SD_LEVEL -> Forced splash damage for Auto Blitz-Beat -> count targets
 				//special case: Venom Splasher uses a different range for searching than for splashing
-				if( flag&SD_LEVEL || skill->get_nk(skill_id)&NK_SPLASHSPLIT )
+				if ((flag & SD_LEVEL) != 0 || (skill->get_nk(skill_id, src, bl) & NK_SPLASHSPLIT) != 0)
 					skill->area_temp[0] = map->foreachinrange(skill->area_sub, bl, (skill_id == AS_SPLASHER)?1:skill->get_splash(skill_id, skill_lv), BL_CHAR, src, skill_id, skill_lv, tick, BCT_ENEMY, skill->area_sub_count);
 
 				// recursive invocation of skill->castend_damage_id() with flag|1
@@ -14483,7 +14485,7 @@ static int skill_isammotype(struct map_session_data *sd, int skill_id, int skill
 		(sd->weapontype == W_BOW || (sd->weapontype >= W_REVOLVER && sd->weapontype <= W_GRENADE)) &&
 		skill_id != HT_PHANTASMIC &&
 		skill->get_type(skill_id, skill_lv) == BF_WEAPON &&
-		!(skill->get_nk(skill_id)&NK_NO_DAMAGE) &&
+		(skill->get_nk(skill_id, &sd->bl, NULL) & NK_NO_DAMAGE) == 0 &&
 		!skill->get_spiritball(skill_id, skill_lv) //Assume spirit spheres are used as ammo instead.
 	);
 }
@@ -17448,8 +17450,10 @@ static int skill_chastle_mob_changetarget(struct block_list *bl, va_list ap)
 static void skill_trap_do_splash(struct block_list *bl, uint16 skill_id, uint16 skill_lv, int bl_flag, int64 tick)
 {
 	int enemy_count = 0;
+	struct skill_unit *su = BL_CAST(BL_SKILL, bl);
+	struct block_list *src = (su != NULL && su->group != NULL) ? map->id2bl(su->group->src_id) : NULL;
 
-	if (skill->get_nk(skill_id) & NK_SPLASHSPLIT) {
+	if ((skill->get_nk(skill_id, src, NULL) & NK_SPLASHSPLIT) != 0) {
 		enemy_count = map->foreachinrange(skill->area_sub, bl, skill->get_splash(skill_id, skill_lv), BL_CHAR, bl, skill_id, skill_lv, tick, BCT_ENEMY, skill->area_sub_count);
 		enemy_count = max(1, enemy_count); // Don't let enemy_count be 0 when spliting trap damage
 	}
@@ -19387,7 +19391,7 @@ static void skill_toggle_magicpower(struct block_list *bl, uint16 skill_id, int 
 	struct status_change *sc = status->get_sc(bl);
 
 	// non-offensive and non-magic skills do not affect the status
-	if ((skill->get_nk(skill_id) & NK_NO_DAMAGE) != 0 || (skill->get_type(skill_id, skill_lv) & BF_MAGIC) == 0)
+	if ((skill->get_nk(skill_id, bl, NULL) & NK_NO_DAMAGE) != 0 || (skill->get_type(skill_id, skill_lv) & BF_MAGIC) == 0)
 		return;
 
 	if (sc && sc->count && sc->data[SC_MAGICPOWER]) {

@@ -13031,7 +13031,8 @@ static void clif_useSkillToIdReal(int fd, struct map_session_data *sd, int skill
 	// Whether skill fails or not is irrelevant, the char ain't idle. [Skotlex]
 	pc->update_idle_time(sd, BCIDLE_USESKILLTOID);
 
-	bool allow_self_skill = ((tmp & INF_SELF_SKILL) != 0 && (skill->get_nk(skill_id) & NK_NO_DAMAGE) != 0);
+	int nk = skill->get_nk(skill_id, &sd->bl, map->id2bl(target_id));
+	bool allow_self_skill = ((tmp & INF_SELF_SKILL) != 0 && (nk & NK_NO_DAMAGE) != 0);
 	allow_self_skill = (allow_self_skill && battle_config.skill_enabled_npc == SKILLENABLEDNPC_SELF);
 
 	if ((sd->npc_id != 0 && sd->state.using_megaphone == 0 && !allow_self_skill && battle_config.skill_enabled_npc != SKILLENABLEDNPC_ALL)

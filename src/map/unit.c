@@ -1396,8 +1396,11 @@ static int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill
 		else if( skill->get_inf(skill_id) != 1 ) // Only non-targetable skills should use auto target
 			target_id = ud->target;
 
-		if( skill->get_inf(skill_id)&INF_SELF_SKILL && skill->get_nk(skill_id)&NK_NO_DAMAGE )// exploit fix
+		if ((skill->get_nk(skill_id, src, map->id2bl(target_id)) & NK_NO_DAMAGE) != 0
+		    && (skill->get_inf(skill_id) & INF_SELF_SKILL) != 0) { // exploit fix
 			target_id = src->id;
+		}
+
 		temp = 1;
 	} else if ( target_id == src->id &&
 		skill->get_inf(skill_id)&INF_SELF_SKILL &&

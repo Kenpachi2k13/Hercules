@@ -2928,7 +2928,9 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 			sc_start2(src,bl,SC_COMBOATTACK,100,GC_WEAPONBLOCKING,src->id,2000);
 			return 0;
 		}
-		if ((sce=sc->data[SC_AUTOGUARD]) && flag&BF_WEAPON && !(skill->get_nk(skill_id)&NK_NO_CARDFIX_ATK) && rnd()%100 < sce->val2) {
+		if ((sce = sc->data[SC_AUTOGUARD]) != NULL && (flag & BF_WEAPON) != 0
+		    && (skill->get_nk(skill_id, src, bl) & NK_NO_CARDFIX_ATK) == 0
+		    && rnd() % 100 < sce->val2) {
 			int delay;
 			struct status_change_entry *sce_d = sc->data[SC_DEVOTION];
 
@@ -3022,8 +3024,8 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 			return 0;
 		}
 
-		if (((sce=sc->data[SC_NJ_UTSUSEMI]) || sc->data[SC_NJ_BUNSINJYUTSU])
-		&& flag&BF_WEAPON && !(skill->get_nk(skill_id)&NK_NO_CARDFIX_ATK)) {
+		if ((flag & BF_WEAPON) != 0 && (skill->get_nk(skill_id, src, bl) & NK_NO_CARDFIX_ATK) == 0
+		    && ((sce = sc->data[SC_NJ_UTSUSEMI]) != NULL || sc->data[SC_NJ_BUNSINJYUTSU] != NULL)) {
 
 			skill->additional_effect (src, bl, skill_id, skill_lv, flag, ATK_BLOCK, timer->gettick() );
 			if( !status->isdead(src) )
@@ -3125,8 +3127,10 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 #endif
 		if(sc->data[SC_FOGWALL]) {
 			if(flag&BF_SKILL) { //25% reduction
-				if ( !(skill->get_inf(skill_id)&INF_GROUND_SKILL) && !(skill->get_nk(skill_id)&NK_SPLASH) )
-					damage -= 25*damage/100;
+				if ((skill->get_inf(skill_id) & INF_GROUND_SKILL) == 0
+				    && (skill->get_nk(skill_id, src, bl) & NK_SPLASH) == 0) {
+					damage -= 25 * damage / 100;
+				}
 			} else if ((flag&(BF_LONG|BF_WEAPON)) == (BF_LONG|BF_WEAPON)) {
 				damage >>= 2; //75% reduction
 			}
@@ -3642,7 +3646,7 @@ static struct Damage battle_calc_magic_attack(struct block_list *src, struct blo
 	ad.blewcount = skill->get_blewcount(skill_id,skill_lv);
 	ad.flag=BF_MAGIC|BF_SKILL;
 	ad.dmg_lv=ATK_DEF;
-	nk = skill->get_nk(skill_id);
+	nk = skill->get_nk(skill_id, src, target);
 	flag.imdef = (nk&NK_IGNORE_DEF)? 1 : 0;
 
 	sd = BL_CAST(BL_PC, src);
@@ -3980,7 +3984,7 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 	md.dmg_lv=ATK_DEF;
 	md.flag=BF_MISC|BF_SKILL;
 
-	nk = skill->get_nk(skill_id);
+	nk = skill->get_nk(skill_id, src, target);
 
 	sd = BL_CAST(BL_PC, src);
 	tsd = BL_CAST(BL_PC, target);
@@ -4447,7 +4451,7 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 	wd.flag = BF_WEAPON; //Initial Flag
 	wd.flag |= (skill_id||wflag)?BF_SKILL:BF_NORMAL; // Baphomet card's splash damage is counted as a skill. [Inkfish]
 	wd.dmg_lv=ATK_DEF; //This assumption simplifies the assignation later
-	nk = skill->get_nk(skill_id);
+	nk = skill->get_nk(skill_id, src, target);
 	if( !skill_id && wflag ) //If flag, this is splash damage from Baphomet Card and it always hits.
 		nk |= NK_NO_CARDFIX_ATK|NK_IGNORE_FLEE;
 	flag.hit = (nk&NK_IGNORE_FLEE) ? 1 : 0;
