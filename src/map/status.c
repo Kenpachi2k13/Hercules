@@ -1813,7 +1813,7 @@ static int status_check_skilluse(struct block_list *src, struct block_list *targ
 	hide_flag = flag?OPTION_HIDE:(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK);
 
 	// Applies even if the target hides
-	if ((skill->get_ele(skill_id,1) == ELE_EARTH && skill_id != MG_STONECURSE) // Ground type
+	if ((skill->get_ele(skill_id, 1, src, target) == ELE_EARTH && skill_id != MG_STONECURSE) // Ground type
 	  || (flag&1 && skill->get_nk(skill_id)&NK_NO_DAMAGE && skill_id != ALL_RESURRECTION)) // Buff/debuff skills started before hiding
 		hide_flag &= ~OPTION_HIDE;
 

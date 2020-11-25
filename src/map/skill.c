@@ -211,7 +211,7 @@ static int skill_get_inf(int skill_id)
 	return skill->dbs->db[idx].inf;
 }
 
-static int skill_get_ele(int skill_id, int skill_lv)
+static int skill_get_ele(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -2084,8 +2084,13 @@ static int skill_additional_effect(struct block_list *src, struct block_list *bl
 		case RA_COBALTTRAP:
 		case RA_MAIZETRAP:
 		case RA_VERDURETRAP:
-			if( dstmd && !(dstmd->status.mode&MD_BOSS) )
-				sc_start2(src,bl,SC_ARMOR_PROPERTY,100,skill_lv,skill->get_ele(skill_id,skill_lv),skill->get_time2(skill_id,skill_lv));
+			if (dstmd != NULL && (dstmd->status.mode & MD_BOSS) == 0) {
+				int ele = skill->get_ele(skill_id, skill_lv, src, bl);
+				int time = skill->get_time2(skill_id, skill_lv);
+
+				sc_start2(src, bl, SC_ARMOR_PROPERTY, 100, skill_lv, ele, time);
+			}
+
 			break;
 		case RA_FIRINGTRAP:
 		case RA_ICEBOUNDTRAP:
@@ -3156,7 +3161,7 @@ static int skill_attack(int attack_type, struct block_list *src, struct block_li
 	if (src->type == BL_PET) { // [Valaris]
 		struct pet_data *pd = BL_UCAST(BL_PET, src);
 		if (pd->a_skill && pd->a_skill->div_ && pd->a_skill->id == skill_id) {
-			int element = skill->get_ele(skill_id, skill_lv);
+			int element = skill->get_ele(skill_id, skill_lv, src, bl);
 			/*if (skill_id == -1) Does it ever worked?
 				element = sstatus->rhw.ele;*/
 			if (element != ELE_NEUTRAL || !(battle_config.attack_attr_none&BL_PET))
@@ -3215,7 +3220,7 @@ static int skill_attack(int attack_type, struct block_list *src, struct block_li
 			if( dmg.dmg_lv != ATK_MISS && reflecttype == 1 ) //Wiz SL canceled and consumed fragment
 		#endif
 			{
-				short s_ele = skill->get_ele(skill_id, skill_lv);
+				short s_ele = skill->get_ele(skill_id, skill_lv, src, bl);
 
 				if (s_ele == -1) // the skill takes the weapon's element
 					s_ele = sstatus->rhw.ele;
@@ -6478,7 +6483,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 	tsce = (tsc != NULL && type != SC_NONE) ? tsc->data[type] : NULL;
 
 	if (src != bl && type > SC_NONE
-	 && (element = skill->get_ele(skill_id, skill_lv)) > ELE_NEUTRAL
+	 && (element = skill->get_ele(skill_id, skill_lv, src, bl)) > ELE_NEUTRAL
 	 && skill->get_inf(skill_id) != INF_SUPPORT_SKILL
 	 && battle->attr_fix(NULL, NULL, 100, element, tstatus->def_ele, tstatus->ele_lv) <= 0)
 		return 1; //Skills that cause an status should be blocked if the target element blocks its element.
@@ -6886,28 +6891,48 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			break;
 
 		case ITEM_ENCHANTARMS:
-			clif->skill_nodamage(src,bl,skill_id,skill_lv,
-				sc_start2(src,bl,type,100,skill_lv,
-					skill->get_ele(skill_id,skill_lv), skill->get_time(skill_id,skill_lv)));
-			break;
+		{
+			int ele = skill->get_ele(skill_id, skill_lv, src, bl);
+			int time = skill->get_time(skill_id, skill_lv);
 
+			clif->skill_nodamage(src, bl, skill_id, skill_lv, sc_start2(src, bl, type, 100, skill_lv,
+										    ele, time));
+			break;
+		}
 		case TK_SEVENWIND:
-			switch(skill->get_ele(skill_id,skill_lv)) {
-				case ELE_EARTH : type = SC_PROPERTYGROUND;  break;
-				case ELE_WIND  : type = SC_PROPERTYWIND;   break;
-				case ELE_WATER : type = SC_PROPERTYWATER;  break;
-				case ELE_FIRE  : type = SC_PROPERTYFIRE;   break;
-				case ELE_GHOST : type = SC_PROPERTYTELEKINESIS;  break;
-				case ELE_DARK  : type = SC_PROPERTYDARK; break;
-				case ELE_HOLY  : type = SC_ASPERSIO;     break;
+		{
+			int ele = skill->get_ele(skill_id, skill_lv, src, bl);
+
+			switch (ele) {
+			case ELE_EARTH:
+				type = SC_PROPERTYGROUND;
+				break;
+			case ELE_WIND:
+				type = SC_PROPERTYWIND;
+				break;
+			case ELE_WATER:
+				type = SC_PROPERTYWATER;
+				break;
+			case ELE_FIRE:
+				type = SC_PROPERTYFIRE;
+				break;
+			case ELE_GHOST:
+				type = SC_PROPERTYTELEKINESIS;
+				break;
+			case ELE_DARK:
+				type = SC_PROPERTYDARK;
+				break;
+			case ELE_HOLY:
+				type = SC_ASPERSIO;
+				break;
 			}
-			clif->skill_nodamage(src,bl,skill_id,skill_lv,
-				sc_start(src,bl,type,100,skill_lv,skill->get_time(skill_id,skill_lv)));
 
-			sc_start2(src,bl,SC_TK_SEVENWIND,100,skill_lv,skill->get_ele(skill_id,skill_lv),skill->get_time(skill_id,skill_lv));
+			int time = skill->get_time(skill_id, skill_lv);
 
+			clif->skill_nodamage(src, bl, skill_id, skill_lv, sc_start(src, bl, type, 100, skill_lv, time));
+			sc_start2(src, bl, SC_TK_SEVENWIND, 100, skill_lv, ele, time);
 			break;
-
+		}
 		case PR_KYRIE:
 		case MER_KYRIE:
 		case SU_TUNAPARTY:
@@ -8369,17 +8394,25 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 		case NPC_CHANGEHOLY:
 		case NPC_CHANGEDARKNESS:
 		case NPC_CHANGETELEKINESIS:
-			clif->skill_nodamage(src,bl,skill_id,skill_lv,
-				sc_start2(src, bl, type, 100, skill_lv, skill->get_ele(skill_id,skill_lv),
-					skill->get_time(skill_id, skill_lv)));
+		{
+			int ele = skill->get_ele(skill_id, skill_lv, src, bl);
+			int time = skill->get_time(skill_id, skill_lv);
+
+			clif->skill_nodamage(src, bl, skill_id, skill_lv, sc_start2(src, bl, type, 100, skill_lv,
+										    ele, time));
 			break;
+		}
 		case NPC_CHANGEUNDEAD:
 			//This skill should fail if target is wearing bathory/evil druid card [Brainstorm]
 			//TO-DO This is ugly, fix it
-			if(tstatus->def_ele==ELE_UNDEAD || tstatus->def_ele==ELE_DARK) break;
-			clif->skill_nodamage(src,bl,skill_id,skill_lv,
-				sc_start2(src, bl, type, 100, skill_lv, skill->get_ele(skill_id,skill_lv),
-					skill->get_time(skill_id, skill_lv)));
+			if (tstatus->def_ele == ELE_UNDEAD || tstatus->def_ele == ELE_DARK)
+				break;
+
+			int ele = skill->get_ele(skill_id, skill_lv, src, bl);
+			int time = skill->get_time(skill_id, skill_lv);
+
+			clif->skill_nodamage(src, bl, skill_id, skill_lv, sc_start2(src, bl, type, 100, skill_lv,
+										    ele, time));
 			break;
 
 		case NPC_PROVOCATION:
@@ -10815,7 +10848,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 		case KO_KAZEHU_SEIRAN:
 		case KO_DOHU_KOUKAI:
 			if(sd) {
-				enum spirit_charm_types ttype = skill->get_ele(skill_id, skill_lv);
+				enum spirit_charm_types ttype = skill->get_ele(skill_id, skill_lv, src, bl);
 				clif->skill_nodamage(src, bl, skill_id, skill_lv, 1);
 				pc->add_charm(sd, skill->get_time(skill_id, skill_lv), MAX_SPIRITCHARM, ttype); // replace existing charms of other type
 			}
@@ -13868,7 +13901,7 @@ static int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *b
 			if (sg->unit_id != UNT_ZEPHYR && !battle->check_undead(tstatus->race, tstatus->def_ele)) {
 				int hp = tstatus->max_hp / 100; //+1% each 5s
 				if ((sg->val3) % 5) { //each 5s
-					if (tstatus->def_ele == skill->get_ele(sg->skill_id,sg->skill_lv)) {
+					if (tstatus->def_ele == skill->get_ele(sg->skill_id, sg->skill_lv, ss, bl)) {
 						status->heal(bl, hp, 0, STATUS_HEAL_SHOWEFFECT);
 					} else if( (sg->unit_id ==  UNT_FIRE_INSIGNIA && tstatus->def_ele == ELE_EARTH)
 					        || (sg->unit_id ==  UNT_WATER_INSIGNIA && tstatus->def_ele == ELE_FIRE)
@@ -15279,7 +15312,8 @@ static int skill_check_condition_castbegin(struct map_session_data *sd, uint16 s
 		case KO_HYOUHU_HUBUKI:
 		case KO_KAZEHU_SEIRAN:
 		case KO_DOHU_KOUKAI:
-			if (sd->charm_type == skill->get_ele(skill_id, skill_lv) && sd->charm_count >= MAX_SPIRITCHARM) {
+			if (sd->charm_type == skill->get_ele(skill_id, skill_lv, &sd->bl, NULL)
+			    && sd->charm_count >= MAX_SPIRITCHARM) {
 				clif->skill_fail(sd, skill_id, USESKILL_FAIL_SUMMON, 0, 0);
 				return 0;
 			}
@@ -16024,7 +16058,7 @@ static struct skill_condition skill_get_requirement(struct map_session_data *sd,
 			req.sp += req.sp * sc->data[SC_UNLIMITED_HUMMING_VOICE]->val3 / 100;
 		if (sc->data[SC_RECOGNIZEDSPELL])
 			req.sp += req.sp / 4;
-		if (sc->data[SC_TELEKINESIS_INTENSE] && skill->get_ele(skill_id, skill_lv) == ELE_GHOST)
+		if (sc->data[SC_TELEKINESIS_INTENSE] != NULL && skill->get_ele(skill_id, skill_lv, &sd->bl, NULL) == ELE_GHOST)
 			req.sp -= req.sp * sc->data[SC_TELEKINESIS_INTENSE]->val2 / 100;
 		if (sc->data[SC_TARGET_ASPD])
 			req.sp -= req.sp * sc->data[SC_TARGET_ASPD]->val1 / 100;
@@ -16388,8 +16422,10 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 			VARCAST_REDUCTION(sc->data[SC_POEMBRAGI]->val2);
 		if (sc->data[SC_IZAYOI])
 			VARCAST_REDUCTION(50);
-		if (sc->data[SC_WATER_INSIGNIA] && sc->data[SC_WATER_INSIGNIA]->val1 == 3 && (skill->get_ele(skill_id, skill_lv) == ELE_WATER))
-			VARCAST_REDUCTION(30); //Reduces 30% Variable Cast Time of Water spells.
+		if (sc->data[SC_WATER_INSIGNIA] != NULL && sc->data[SC_WATER_INSIGNIA]->val1 == 3
+		    && skill->get_ele(skill_id, skill_lv, bl, NULL) == ELE_WATER) {
+			VARCAST_REDUCTION(30); // Reduces 30% Variable Cast Time of Water spells.
+		}
 		if (sc->data[SC_TELEKINESIS_INTENSE])
 			VARCAST_REDUCTION(sc->data[SC_TELEKINESIS_INTENSE]->val2);
 		if (sc->data[SC_SOULLINK]){
@@ -16534,8 +16570,10 @@ static int skill_delay_fix(struct block_list *bl, uint16 skill_id, uint16 skill_
 		if (sc && sc->count) {
 			if (sc->data[SC_POEMBRAGI])
 				time -= time * sc->data[SC_POEMBRAGI]->val3 / 100;
-			if (sc->data[SC_WIND_INSIGNIA] && sc->data[SC_WIND_INSIGNIA]->val1 == 3 && (skill->get_ele(skill_id, skill_lv) == ELE_WIND))
+			if (sc->data[SC_WIND_INSIGNIA] != NULL && sc->data[SC_WIND_INSIGNIA]->val1 == 3
+			    && skill->get_ele(skill_id, skill_lv, bl, NULL) == ELE_WIND) {
 				time /= 2; // After Delay of Wind element spells reduced by 50%.
+			}
 		}
 
 	}
@@ -17478,8 +17516,10 @@ static int skill_trap_splash(struct block_list *bl, va_list ap)
 		case UNT_COBALTTRAP:
 		case UNT_MAIZETRAP:
 		case UNT_VERDURETRAP:
-			if( bl->type != BL_PC && !is_boss(bl) )
-				sc_start2(ss,bl,SC_ARMOR_PROPERTY,100,sg->skill_lv,skill->get_ele(sg->skill_id,sg->skill_lv),skill->get_time2(sg->skill_id,sg->skill_lv));
+			if (bl->type != BL_PC && !is_boss(bl))
+				sc_start2(ss, bl, SC_ARMOR_PROPERTY, 100, sg->skill_lv,
+					  skill->get_ele(sg->skill_id, sg->skill_lv, ss, bl),
+					  skill->get_time2(sg->skill_id, sg->skill_lv));
 			break;
 		case UNT_REVERBERATION:
 			if( battle->check_target(src,bl,BCT_ENEMY) > 0 ) {

@@ -5496,7 +5496,7 @@ static void clif_useskill(struct block_list *bl, int src_id, int dst_id, int dst
 {
 	nullpo_retv(bl);
 
-	const int element = skill->get_ele(skill_id, skill_lv);
+	const int element = skill->get_ele(skill_id, skill_lv, map->id2bl(src_id), map->id2bl(dst_id));
 	struct PACKET_ZC_USESKILL_ACK p;
 	p.packetType = HEADER_ZC_USESKILL_ACK;
 	p.srcId = src_id;

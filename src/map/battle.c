@@ -2848,7 +2848,7 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 			if( skill_id == MG_NAPALMBEAT ||
 				skill_id == MG_SOULSTRIKE ||
 				skill_id == WL_SOULEXPANSION ||
-				(skill_id && skill->get_ele(skill_id, skill_lv) == ELE_GHOST) ||
+				(skill_id != 0 && skill->get_ele(skill_id, skill_lv, src, bl) == ELE_GHOST) ||
 				(!skill_id && (status->get_status_data(src))->rhw.ele == ELE_GHOST)
 					){
 				if( skill_id == WL_SOULEXPANSION )
@@ -3378,7 +3378,7 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 	}
 	if (t_sd && pc_ismadogear(t_sd) && rnd()%100 < 50) {
 		int element = -1;
-		if (!skill_id || (element = skill->get_ele(skill_id, skill_lv)) == -1) {
+		if (skill_id == 0 || (element = skill->get_ele(skill_id, skill_lv, src, bl)) == -1) {
 			// Take weapon's element
 			struct status_data *sstatus = NULL;
 			if (s_sd != NULL && s_sd->bonus.arrow_ele != 0) {
@@ -3650,7 +3650,7 @@ static struct Damage battle_calc_magic_attack(struct block_list *src, struct blo
 	sc = status->get_sc(src);
 
 	//Initialize variables that will be used afterwards
-	s_ele = skill->get_ele(skill_id, skill_lv);
+	s_ele = skill->get_ele(skill_id, skill_lv, src, target);
 
 	if (s_ele == -1){ // pl=-1 : the skill takes the weapon's element
 		s_ele = sstatus->rhw.ele;
@@ -3990,7 +3990,7 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 		md.blewcount += battle->blewcount_bonus(sd, skill_id);
 	}
 
-	s_ele = skill->get_ele(skill_id, skill_lv);
+	s_ele = skill->get_ele(skill_id, skill_lv, src, target);
 	if (s_ele < 0 && s_ele != -3) //Attack that takes weapon's element for misc attacks? Make it neutral [Skotlex]
 		s_ele = ELE_NEUTRAL;
 	else if (s_ele == -3) //Use random element
@@ -4579,7 +4579,7 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 		return wd;
 	}
 
-	s_ele = s_ele_ = skill_id ? skill->get_ele(skill_id, skill_lv) : -1;
+	s_ele = s_ele_ = (skill_id != 0) ? skill->get_ele(skill_id, skill_lv, src, target) : -1;
 	if (s_ele == -1) {
 		//Take weapon's element
 		s_ele = sstatus->rhw.ele;
@@ -5455,7 +5455,7 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 		}
 		//Div fix.
 		damage_div_fix(wd.damage, wd.div_);
-		if ( skill_id > 0 && (skill->get_ele(skill_id, skill_lv) == ELE_NEUTRAL || flag.distinct) ) { // re-evaluate forced neutral skills
+		if (skill_id > 0 && (skill->get_ele(skill_id, skill_lv, src, target) == ELE_NEUTRAL || flag.distinct != 0)) { // re-evaluate forced neutral skills
 			wd.damage = battle->attr_fix(src, target, wd.damage, s_ele, tstatus->def_ele, tstatus->ele_lv);
 			if ( flag.lh )
 				wd.damage2 = battle->attr_fix(src, target, wd.damage2, s_ele_, tstatus->def_ele, tstatus->ele_lv);
