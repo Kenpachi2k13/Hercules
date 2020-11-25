@@ -358,9 +358,14 @@ static int map_moveblock(struct block_list *bl, int x1, int y1, int64 tick)
 		status_change_end(bl, SC_NJ_TATAMIGAESHI, INVALID_TIMER);
 		status_change_end(bl, SC_MAGICROD, INVALID_TIMER);
 		status_change_end(bl, SC_SU_STOOP, INVALID_TIMER);
-		if (sc && sc->data[SC_PROPERTYWALK] &&
-			sc->data[SC_PROPERTYWALK]->val3 >= skill->get_maxcount(sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2) )
-			status_change_end(bl,SC_PROPERTYWALK,INVALID_TIMER);
+		if (sc != NULL && sc->data[SC_PROPERTYWALK] != NULL) {
+			int max_count = skill->get_maxcount(sc->data[SC_PROPERTYWALK]->val1,
+							    sc->data[SC_PROPERTYWALK]->val2,
+							    bl, NULL);
+
+			if (sc->data[SC_PROPERTYWALK]->val3 >= max_count)
+				status_change_end(bl, SC_PROPERTYWALK, INVALID_TIMER);
+		}
 	} else if (bl->type == BL_NPC) {
 		npc->unsetcells(BL_UCAST(BL_NPC, bl));
 	}
@@ -413,13 +418,16 @@ static int map_moveblock(struct block_list *bl, int x1, int y1, int64 tick)
 						status_change_end(bl,SC__SHADOWFORM,INVALID_TIMER);
 				}
 
-				if (sc->data[SC_PROPERTYWALK]
-				 && sc->data[SC_PROPERTYWALK]->val3 < skill->get_maxcount(sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2)
-				 && map->find_skill_unit_oncell(bl,bl->x,bl->y,SO_ELECTRICWALK,NULL,0) == NULL
-				 && map->find_skill_unit_oncell(bl,bl->x,bl->y,SO_FIREWALK,NULL,0) == NULL
-				 && skill->unitsetting(bl,sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2,x0, y0,0)
-				) {
-					sc->data[SC_PROPERTYWALK]->val3++;
+				if (sc->data[SC_PROPERTYWALK] != NULL) {
+					int skill_id = sc->data[SC_PROPERTYWALK]->val1;
+					int skill_lv = sc->data[SC_PROPERTYWALK]->val2;
+
+					if (sc->data[SC_PROPERTYWALK]->val3 < skill->get_maxcount(skill_id, skill_lv, bl, NULL)
+					    && map->find_skill_unit_oncell(bl, bl->x, bl->y, SO_ELECTRICWALK, NULL, 0) == NULL
+					    && map->find_skill_unit_oncell(bl, bl->x, bl->y, SO_FIREWALK, NULL, 0) == NULL
+					    && skill->unitsetting(bl, skill_id, skill_lv, x0, y0, 0) != NULL) {
+						sc->data[SC_PROPERTYWALK]->val3++;
+					}
 				}
 			}
 			/* Guild Aura Moving */

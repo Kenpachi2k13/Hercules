@@ -757,7 +757,7 @@ static int skill_get_castcancel(int skill_id, int skill_lv, struct block_list *s
 	return skill->dbs->db[idx].castcancel[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_maxcount(int skill_id, int skill_lv)
+static int skill_get_maxcount(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -2530,9 +2530,8 @@ static int skill_additional_effect(struct block_list *src, struct block_list *bl
 				  ) {
 					continue;
 				}
-				if( BL_PC&battle_config.land_skill_limit &&
-					(maxcount = skill->get_maxcount(temp, auto_skill_lv)) > 0
-				  ) {
+				if ((BL_PC & battle_config.land_skill_limit) != 0
+				    && (maxcount = skill->get_maxcount(temp, auto_skill_lv, src, tbl)) > 0) {
 					int v;
 					for(v=0;v<MAX_SKILLUNITGROUP && sd->ud.skillunit[v] && maxcount;v++) {
 						if(sd->ud.skillunit[v]->skill_id == temp)
@@ -2669,9 +2668,8 @@ static int skill_onskillusage(struct map_session_data *sd, struct block_list *bl
 			  ) {
 				continue;
 			}
-			if( BL_PC&battle_config.land_skill_limit &&
-				(maxcount = skill->get_maxcount(temp, skill_lv)) > 0
-			  ) {
+			if ((BL_PC & battle_config.land_skill_limit) != 0
+			    && (maxcount = skill->get_maxcount(temp, skill_lv, &sd->bl, tbl)) > 0) {
 				int v;
 				for(v=0;v<MAX_SKILLUNITGROUP && sd->ud.skillunit[v] && maxcount;v++) {
 					if(sd->ud.skillunit[v]->skill_id == temp)
@@ -2889,9 +2887,8 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 				  ) {
 					continue;
 				}
-				if( BL_PC&battle_config.land_skill_limit &&
-					(maxcount = skill->get_maxcount(auto_skill_id, auto_skill_lv)) > 0
-				  ) {
+				if ((BL_PC & battle_config.land_skill_limit) != 0
+				    && (maxcount = skill->get_maxcount(auto_skill_id, auto_skill_lv, src, tbl)) > 0) {
 					int v;
 					for(v=0;v<MAX_SKILLUNITGROUP && dstsd->ud.skillunit[v] && maxcount;v++) {
 						if(dstsd->ud.skillunit[v]->skill_id == auto_skill_id)
@@ -4924,7 +4921,7 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 			skill->area_temp[1] = bl->id;
 			map->foreachinpath(skill->attack_area, src->m, src->x, src->y, bl->x, bl->y,
 			                   skill->get_splash(skill_id, skill_lv, src, bl),
-					   skill->get_maxcount(skill_id, skill_lv), skill->splash_target(src),
+					   skill->get_maxcount(skill_id, skill_lv, src, bl), skill->splash_target(src),
 			                   skill->get_type(skill_id, skill_lv), src, src, skill_id, skill_lv, tick,
 					   flag, BCT_ENEMY);
 			break;
@@ -4937,7 +4934,7 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 			skill->area_temp[1] = bl->id;
 			map->foreachinpath(skill->attack_area, src->m, src->x, src->y, bl->x, bl->y,
 			                   skill->get_splash(skill_id, skill_lv, src, bl),
-					   skill->get_maxcount(skill_id, skill_lv), skill->splash_target(src),
+					   skill->get_maxcount(skill_id, skill_lv, src, bl), skill->splash_target(src),
 			                   skill->get_type(skill_id, skill_lv), src, src, skill_id, skill_lv, tick,
 					   flag, BCT_ENEMY);
 			break;
@@ -11122,7 +11119,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			{
 				struct status_change *sc = status->get_sc(src);
 
-				if( sc && sc->bs_counter < skill->get_maxcount( skill_id , skill_lv) ) {
+				if (sc != NULL && sc->bs_counter < skill->get_maxcount(skill_id , skill_lv, src, bl)) {
 					if( tsc && tsc->data[type] ){
 						(sc->bs_counter)--;
 						status_change_end(src, type, INVALID_TIMER); // the first one cancels and the last one will take effect resetting the timer
@@ -11620,9 +11617,8 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 			if (sd) clif->skill_fail(sd, ud->skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 			break;
 		}
-		if( src->type&battle_config.land_skill_limit &&
-			(maxcount = skill->get_maxcount(ud->skill_id, ud->skill_lv)) > 0
-		  ) {
+		if ((src->type & battle_config.land_skill_limit) != 0
+		    && (maxcount = skill->get_maxcount(ud->skill_id, ud->skill_lv, src, NULL)) > 0) {
 			int i;
 			for(i=0;i<MAX_SKILLUNITGROUP && ud->skillunit[i] && maxcount;i++) {
 				if(ud->skillunit[i]->skill_id == ud->skill_id)
@@ -11885,7 +11881,7 @@ static int skill_castend_map(struct map_session_data *sd, uint16 skill_id, const
 				p[2] = &sd->status.memo_point[1];
 				p[3] = &sd->status.memo_point[2];
 
-				if((maxcount = skill->get_maxcount(skill_id, sd->menuskill_val)) > 0) {
+				if((maxcount = skill->get_maxcount(skill_id, sd->menuskill_val, &sd->bl, NULL)) > 0) {
 					for(i=0;i<MAX_SKILLUNITGROUP && sd->ud.skillunit[i] && maxcount;i++) {
 						if(sd->ud.skillunit[i]->skill_id == skill_id)
 							maxcount--;
@@ -15785,10 +15781,15 @@ static int skill_check_condition_castbegin(struct map_session_data *sd, uint16 s
 			break;
 		case SO_FIREWALK:
 		case SO_ELECTRICWALK: // Can't be casted until you've walked all cells.
-			if( sc && sc->data[SC_PROPERTYWALK] &&
-			   sc->data[SC_PROPERTYWALK]->val3 < skill->get_maxcount(sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2) ) {
-				clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
-				return 0;
+			if (sc != NULL && sc->data[SC_PROPERTYWALK] != NULL) {
+				int max_count = skill->get_maxcount(sc->data[SC_PROPERTYWALK]->val1,
+								    sc->data[SC_PROPERTYWALK]->val2,
+								    &sd->bl, NULL);
+
+				if (sc->data[SC_PROPERTYWALK]->val3 < max_count) {
+					clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
+					return 0;
+				}
 			}
 			break;
 		case SO_EL_CONTROL:
@@ -16231,7 +16232,7 @@ static int skill_check_condition_castend(struct map_session_data *sd, uint16 ski
 					case 5: mob_class = MOBID_G_GEOGRAPHER; break;
 				}
 			} else {
-				maxcount = skill->get_maxcount(skill_id,skill_lv);
+				maxcount = skill->get_maxcount(skill_id, skill_lv, &sd->bl, NULL);
 				mob_class = MOBID_MARINE_SPHERE;
 			}
 			if(battle_config.land_skill_limit && maxcount>0 && (battle_config.land_skill_limit&BL_PC)) {
@@ -16249,7 +16250,7 @@ static int skill_check_condition_castend(struct map_session_data *sd, uint16 ski
 		case NC_SILVERSNIPER:
 		case NC_MAGICDECOY: {
 				int c = 0;
-				int maxcount = skill->get_maxcount(skill_id,skill_lv);
+				int maxcount = skill->get_maxcount(skill_id, skill_lv, &sd->bl, NULL);
 
 				if( battle_config.land_skill_limit && maxcount > 0 && ( battle_config.land_skill_limit&BL_PC ) ) {
 					if (skill_id == NC_MAGICDECOY) {
@@ -16269,7 +16270,7 @@ static int skill_check_condition_castend(struct map_session_data *sd, uint16 ski
 		case KO_ZANZOU: {
 				int c = 0;
 				i = map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, MOBID_KO_KAGE, skill_id, &c);
-				if( c >= skill->get_maxcount(skill_id,skill_lv) || c != i) {
+				if (c >= skill->get_maxcount(skill_id, skill_lv, &sd->bl, NULL) || c != i) {
 					clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 					return 0;
 				}

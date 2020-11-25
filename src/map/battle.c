@@ -6504,9 +6504,8 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 					 && skill->get_unit_flag(r_skill)&UF_NOFOOTSET )
 						type = -1;
 
-					if( BL_PC&battle_config.land_skill_limit
-					 && (maxcount = skill->get_maxcount(r_skill, r_lv)) > 0
-					) {
+					if ((BL_PC & battle_config.land_skill_limit) != 0
+					    && (maxcount = skill->get_maxcount(r_skill, r_lv, src, target)) > 0) {
 						int v;
 						for(v=0;v<MAX_SKILLUNITGROUP && sd->ud.skillunit[v] && maxcount;v++) {
 							if(sd->ud.skillunit[v]->skill_id == r_skill)
