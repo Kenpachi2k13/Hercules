@@ -379,10 +379,12 @@ static int skill_get_spiritball(int skill_id, int skill_lv, struct block_list *s
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The required item's index. Defaults to INDEX_NOT_FOUND (-1) in case of error or if no appropriate index was found.
  *
  **/
-static int skill_get_item_index(int skill_id, int skill_lv)
+static int skill_get_item_index(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return INDEX_NOT_FOUND;
@@ -8034,7 +8036,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				}
 				if( sd ) {
 					int bonus = 100, potion = min(500+skill_lv,505);
-					int item_idx = skill->get_item_index(skill_id, skill_lv);
+					int item_idx = skill->get_item_index(skill_id, skill_lv, src, bl);
 
 					if (item_idx == INDEX_NOT_FOUND) {
 						clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
@@ -11989,7 +11991,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 		// Slim Pitcher [Celest]
 		case CR_SLIMPITCHER:
 			if (sd) {
-				int item_idx = skill->get_item_index(skill_id, skill_lv);
+				int item_idx = skill->get_item_index(skill_id, skill_lv, src, NULL);
 
 				if (item_idx == INDEX_NOT_FOUND) {
 					clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0, 0);
@@ -12028,7 +12030,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 					                   skill->castend_nodamage_id);
 				}
 			} else {
-				int item_idx = skill->get_item_index(skill_id, skill_lv);
+				int item_idx = skill->get_item_index(skill_id, skill_lv, src, NULL);
 
 				if (item_idx == INDEX_NOT_FOUND)
 					return 1;
