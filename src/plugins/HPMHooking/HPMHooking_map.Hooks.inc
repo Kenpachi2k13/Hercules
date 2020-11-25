@@ -77887,15 +77887,15 @@ int HP_skill_get_castdef(int skill_id, int skill_lv, struct block_list *source, 
 	}
 	return retVal___;
 }
-int HP_skill_get_weapontype(int skill_id) {
+int HP_skill_get_weapontype(int skill_id, struct block_list *source, struct block_list *target) {
 	int hIndex = 0;
 	int retVal___ = 0;
 	if (HPMHooks.count.HP_skill_get_weapontype_pre > 0) {
-		int (*preHookFunc) (int *skill_id);
+		int (*preHookFunc) (int *skill_id, struct block_list **source, struct block_list **target);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_skill_get_weapontype_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_skill_get_weapontype_pre[hIndex].func;
-			retVal___ = preHookFunc(&skill_id);
+			retVal___ = preHookFunc(&skill_id, &source, &target);
 		}
 		if (*HPMforce_return) {
 			*HPMforce_return = false;
@@ -77903,13 +77903,13 @@ int HP_skill_get_weapontype(int skill_id) {
 		}
 	}
 	{
-		retVal___ = HPMHooks.source.skill.get_weapontype(skill_id);
+		retVal___ = HPMHooks.source.skill.get_weapontype(skill_id, source, target);
 	}
 	if (HPMHooks.count.HP_skill_get_weapontype_post > 0) {
-		int (*postHookFunc) (int retVal___, int skill_id);
+		int (*postHookFunc) (int retVal___, int skill_id, struct block_list *source, struct block_list *target);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_skill_get_weapontype_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_skill_get_weapontype_post[hIndex].func;
-			retVal___ = postHookFunc(retVal___, skill_id);
+			retVal___ = postHookFunc(retVal___, skill_id, source, target);
 		}
 	}
 	return retVal___;

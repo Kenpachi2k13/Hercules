@@ -6243,9 +6243,10 @@ static int pc_checkallowskill(struct map_session_data *sd)
 		// Skills requiring specific weapon types
 		if( scw_list[i] == SC_DANCING && !battle_config.dancing_weaponswitch_fix )
 			continue;
-		if( sd->sc.data[scw_list[i]]
-		 && !pc_check_weapontype(sd,skill->get_weapontype(status->sc2skill(scw_list[i]))))
+		if (sd->sc.data[scw_list[i]] != NULL
+		    && pc_check_weapontype(sd, skill->get_weapontype(status->sc2skill(scw_list[i]), &sd->bl, NULL)) == 0) {
 			status_change_end(&sd->bl, scw_list[i], INVALID_TIMER);
+		}
 	}
 
 	if(sd->sc.data[SC_STRUP] && sd->weapontype != W_FIST)

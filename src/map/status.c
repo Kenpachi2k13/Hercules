@@ -7642,13 +7642,13 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 				return 0; // Overthrust and Overthrust Max cannot be used on Mado Gear [Ind]
 			break;
 		case SC_ADRENALINE:
-			if (sd && !pc_check_weapontype(sd, skill->get_weapontype(BS_ADRENALINE)))
+			if (sd != NULL && pc_check_weapontype(sd, skill->get_weapontype(BS_ADRENALINE, src, bl)) == 0)
 				return 0;
 			if (sc->data[SC_QUAGMIRE] || sc->data[SC_DEC_AGI] || sc->option&OPTION_MADOGEAR) // Adrenaline doesn't affect Mado Gear [Ind]
 				return 0;
 			break;
 		case SC_ADRENALINE2:
-			if (sd && !pc_check_weapontype(sd,skill->get_weapontype(BS_ADRENALINE2)))
+			if (sd != NULL && pc_check_weapontype(sd, skill->get_weapontype(BS_ADRENALINE2, src, bl)) == 0)
 				return 0;
 			if (sc->data[SC_QUAGMIRE] || sc->data[SC_DEC_AGI])
 				return 0;

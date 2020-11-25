@@ -688,7 +688,7 @@ static int skill_get_castdef(int skill_id, int skill_lv, struct block_list *sour
 	return skill->dbs->db[idx].cast_def_rate[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_weapontype(int skill_id)
+static int skill_get_weapontype(int skill_id, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
