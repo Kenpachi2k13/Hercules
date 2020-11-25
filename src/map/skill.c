@@ -559,7 +559,7 @@ static bool skill_get_equip_any_flag(int skill_id, int skill_lv, struct block_li
 	return skill->dbs->db[idx].req_equip.any[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_zeny(int skill_id, int skill_lv)
+static int skill_get_zeny(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)

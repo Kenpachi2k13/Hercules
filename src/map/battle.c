@@ -4133,13 +4133,13 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 		break;
 
 	case KO_MUCHANAGE:
-		md.damage = skill->get_zeny(skill_id ,skill_lv);
+		md.damage = skill->get_zeny(skill_id ,skill_lv, src, target);
 		md.damage = md.damage * (50 + rnd()%50) / 100;
 		if ( is_boss(target) || (sd && !pc->checkskill(sd,NJ_TOBIDOUGU)) )
 			md.damage >>= 1;
 		break;
 	case NJ_ZENYNAGE:
-		md.damage = skill->get_zeny(skill_id ,skill_lv);
+		md.damage = skill->get_zeny(skill_id ,skill_lv, src, target);
 		if (!md.damage) md.damage = 2;
 		md.damage = rnd()%md.damage + md.damage;
 		if (is_boss(target))
