@@ -841,7 +841,7 @@ static int skill_get_castnodex(int skill_id, int skill_lv, struct block_list *so
 	return skill->dbs->db[idx].castnodex[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_delaynodex(int skill_id, int skill_lv)
+static int skill_get_delaynodex(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -17018,7 +17018,7 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
  *------------------------------------------*/
 static int skill_delay_fix(struct block_list *bl, uint16 skill_id, uint16 skill_lv)
 {
-	int delaynodex = skill->get_delaynodex(skill_id, skill_lv);
+	int delaynodex = skill->get_delaynodex(skill_id, skill_lv, bl, NULL);
 	int time = skill->get_delay(skill_id, skill_lv, bl, NULL);
 	struct map_session_data *sd;
 	struct status_change *sc = status->get_sc(bl);
