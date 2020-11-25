@@ -2023,7 +2023,7 @@ struct skill_interface {
 	int (*get_time2) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_castnodex) (int skill_id, int skill_lv);
 	int (*get_delaynodex) (int skill_id, int skill_lv);
-	int (*get_castdef) (int skill_id, int skill_lv);
+	int (*get_castdef) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_weapontype) (int skill_id);
 	int (*get_ammotype) (int skill_id);
 	int (*get_ammo_qty) (int skill_id, int skill_lv);

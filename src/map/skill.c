@@ -669,10 +669,12 @@ static int skill_get_time2(int skill_id, int skill_lv, struct block_list *source
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's cast defence rate corresponding to the passed level. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_castdef(int skill_id, int skill_lv)
+static int skill_get_castdef(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
