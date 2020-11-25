@@ -619,7 +619,7 @@ static int skill_get_delay(int skill_id, int skill_lv, struct block_list *source
 	return skill->dbs->db[idx].delay[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_walkdelay(int skill_id, int skill_lv)
+static int skill_get_walkdelay(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -3637,7 +3637,7 @@ static int skill_attack(int attack_type, struct block_list *src, struct block_li
 		}
 	}
 
-	if (dmg.dmg_lv >= ATK_MISS && (type = skill->get_walkdelay(skill_id, skill_lv)) > 0) {
+	if (dmg.dmg_lv >= ATK_MISS && (type = skill->get_walkdelay(skill_id, skill_lv, src, bl)) > 0) {
 		//Skills with can't walk delay also stop normal attacking for that
 		//duration when the attack connects. [Skotlex]
 		struct unit_data *ud = unit->bl2ud(src);
@@ -6240,8 +6240,11 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 				break;
 			}
 		}
-		if (skill->get_state(ud->skill_id, ud->skill_lv, src, target) != ST_MOVE_ENABLE)
-			unit->set_walkdelay(src, tick, battle_config.default_walk_delay+skill->get_walkdelay(ud->skill_id, ud->skill_lv), 1);
+		if (skill->get_state(ud->skill_id, ud->skill_lv, src, target) != ST_MOVE_ENABLE) {
+			int walk_delay = skill->get_walkdelay(ud->skill_id, ud->skill_lv, src, target);
+
+			unit->set_walkdelay(src, tick, battle_config.default_walk_delay + walk_delay, 1);
+		}
 
 		if(battle_config.skill_log && battle_config.skill_log&src->type)
 			ShowInfo("Type %u, ID %d skill castend id [id =%d, lv=%d, target ID %d]\n",
@@ -11384,7 +11387,9 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 			}
 		}
 #endif // 0
-		unit->set_walkdelay(src, tick, battle_config.default_walk_delay+skill->get_walkdelay(ud->skill_id, ud->skill_lv), 1);
+		int walk_delay = skill->get_walkdelay(ud->skill_id, ud->skill_lv, src, NULL);
+
+		unit->set_walkdelay(src, tick, battle_config.default_walk_delay + walk_delay, 1);
 		status_change_end(src,SC_CAMOUFLAGE, INVALID_TIMER);// only normal attack and auto cast skills benefit from its bonuses
 		map->freeblock_lock();
 		skill->castend_pos2(src,ud->skillx,ud->skilly,ud->skill_id,ud->skill_lv,tick,0);
