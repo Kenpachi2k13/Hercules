@@ -540,10 +540,12 @@ static int skill_get_equip_amount(int skill_id, int item_idx, int skill_lv, stru
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's required equipment's any-flag corresponding to the passed level. Defaults to false in case of error.
  *
  **/
-static bool skill_get_equip_any_flag(int skill_id, int skill_lv)
+static bool skill_get_equip_any_flag(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return false;
@@ -14639,7 +14641,7 @@ static int skill_check_condition_required_equip(struct map_session_data *sd, int
 	nullpo_retr(1, sd);
 
 	struct skill_condition req = skill->get_requirement(sd, skill_id, skill_lv);
-	bool any_equip_flag = skill->get_equip_any_flag(skill_id, skill_lv);
+	bool any_equip_flag = skill->get_equip_any_flag(skill_id, skill_lv, &sd->bl, NULL);
 	bool any_equip_found = false;
 	int fail_id = 0;
 	int fail_amount = 0;
