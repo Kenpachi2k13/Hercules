@@ -2974,7 +2974,7 @@ static int64 battle_calc_damage(struct block_list *src, struct block_list *bl, s
 				unit->set_walkdelay(bl, timer->gettick(), delay, 1);
 
 				if(sc->data[SC_CR_SHRINK] && rnd()%100<5*sce->val1)
-					skill->blown(bl,src,skill->get_blewcount(CR_SHRINK,1),-1,0);
+					skill->blown(bl, src, skill->get_blewcount(CR_SHRINK, 1, bl, src), -1, 0);
 
 				d->dmg_lv = ATK_MISS;
 				return 0;
@@ -3661,7 +3661,7 @@ static struct Damage battle_calc_magic_attack(struct block_list *src, struct blo
 	ad.div_ = skill->get_num(skill_id, skill_lv, src, target);
 	ad.amotion = (skill->get_inf(skill_id)&INF_GROUND_SKILL) ? 0 : sstatus->amotion; //Amotion should be 0 for ground skills.
 	ad.dmotion=tstatus->dmotion;
-	ad.blewcount = skill->get_blewcount(skill_id,skill_lv);
+	ad.blewcount = skill->get_blewcount(skill_id, skill_lv, src, target);
 	ad.flag=BF_MAGIC|BF_SKILL;
 	ad.dmg_lv=ATK_DEF;
 	nk = skill->get_nk(skill_id, src, target);
@@ -3998,7 +3998,7 @@ static struct Damage battle_calc_misc_attack(struct block_list *src, struct bloc
 	md.amotion = (skill->get_inf(skill_id)&INF_GROUND_SKILL) ? 0 : sstatus->amotion;
 	md.dmotion=tstatus->dmotion;
 	md.div_ = skill->get_num(skill_id, skill_lv, src, target);
-	md.blewcount=skill->get_blewcount(skill_id,skill_lv);
+	md.blewcount = skill->get_blewcount(skill_id, skill_lv, src, target);
 	md.dmg_lv=ATK_DEF;
 	md.flag=BF_MISC|BF_SKILL;
 
@@ -4465,7 +4465,7 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 	if(skill_id == KN_AUTOCOUNTER)
 		wd.amotion >>= 1;
 	wd.dmotion=tstatus->dmotion;
-	wd.blewcount = skill_id ? skill->get_blewcount(skill_id,skill_lv) : 0;
+	wd.blewcount = (skill_id != 0) ? skill->get_blewcount(skill_id, skill_lv, src, target) : 0;
 	wd.flag = BF_WEAPON; //Initial Flag
 	wd.flag |= (skill_id||wflag)?BF_SKILL:BF_NORMAL; // Baphomet card's splash damage is counted as a skill. [Inkfish]
 	wd.dmg_lv=ATK_DEF; //This assumption simplifies the assignation later
@@ -5904,7 +5904,12 @@ static void battle_reflect_damage(struct block_list *target, struct block_list *
 				int ratio = (status_get_hp(src) / 100) * sc->data[SC_CRESCENTELBOW]->val1 * status->get_lv(target) / 125;
 				if (ratio > 5000) ratio = 5000; // Maximum of 5000% ATK
 				rdamage = ratio + (damage)* (10 + sc->data[SC_CRESCENTELBOW]->val1 * 20 / 10) / 10;
-				skill->blown(target, src, skill->get_blewcount(SR_CRESCENTELBOW_AUTOSPELL, sc->data[SC_CRESCENTELBOW]->val1), unit->getdir(src), 0);
+
+				int blew_count = skill->get_blewcount(SR_CRESCENTELBOW_AUTOSPELL,
+								      sc->data[SC_CRESCENTELBOW]->val1,
+								      target, src);
+
+				skill->blown(target, src, blew_count, unit->getdir(src), 0);
 				clif->skill_damage(target, src, tick, status_get_amotion(src), 0, rdamage,
 						   1, SR_CRESCENTELBOW_AUTOSPELL, sc->data[SC_CRESCENTELBOW]->val1, BDT_SKILL); // This is how official does
 				clif->delay_damage(tick + delay, src, target,status_get_amotion(src)+1000,0, rdamage/10, 1, BDT_NORMAL);
@@ -5926,7 +5931,12 @@ static void battle_reflect_damage(struct block_list *target, struct block_list *
 
 						trdamage += rdamage = rd1 - (damage = rd1 * 30 / 100); // not normalized as intended.
 						rdelay = clif->skill_damage(src, target, tick, status_get_amotion(src), status_get_dmotion(src), -3000, 1, RK_DEATHBOUND, sc->data[SC_DEATHBOUND]->val1, BDT_SKILL);
-						skill->blown(target, src, skill->get_blewcount(RK_DEATHBOUND, sc->data[SC_DEATHBOUND]->val1), unit->getdir(src), 0);
+
+						int blew_count = skill->get_blewcount(RK_DEATHBOUND,
+										      sc->data[SC_DEATHBOUND]->val1,
+										      target, src);
+
+						skill->blown(target, src, blew_count, unit->getdir(src), 0);
 
 						if( tsd ) /* is this right? rdamage as both left and right? */
 							battle->drain(tsd, src, rdamage, rdamage, status_get_race(src), 0);

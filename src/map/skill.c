@@ -772,7 +772,7 @@ static int skill_get_maxcount(int skill_id, int skill_lv, struct block_list *sou
 	return skill->dbs->db[idx].maxcount[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_blewcount(int skill_id, int skill_lv)
+static int skill_get_blewcount(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -4492,7 +4492,10 @@ static int skill_timerskill(int tid, int64 tick, int id, intptr_t data)
 					if( (tsc && tsc->option&OPTION_HIDE)
 					 || (sc && sc->option&OPTION_HIDE)
 					) {
-						skill->blown(src,target,skill->get_blewcount(skl->skill_id, skl->skill_lv), -1, 0x0 );
+						int blew_count = skill->get_blewcount(skl->skill_id, skl->skill_lv,
+										      src, target);
+
+						skill->blown(src, target, blew_count, -1, 0x0);
 						break;
 					}
 					FALLTHROUGH
@@ -5298,7 +5301,7 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 				int i;
 				enum unit_dir dir = map->calc_dir(bl, src->x, src->y);
 				skill->area_temp[1] = bl->id;
-				skill->area_temp[2] = skill->get_blewcount(skill_id,skill_lv);
+				skill->area_temp[2] = skill->get_blewcount(skill_id, skill_lv, src, bl);
 				// all the enemies between the caster and the target are hit, as well as the target
 				if (skill->attack(BF_WEAPON,src,src,bl,skill_id,skill_lv,tick,0))
 					skill->blown(src, bl, skill->area_temp[2], UNIT_DIR_UNDEFINED, 0);
@@ -7520,7 +7523,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 		case TK_TURNKICK:
 		case MO_BALKYOUNG: //Passive part of the attack. Splash knock-back+stun. [Skotlex]
 			if (skill->area_temp[1] != bl->id) {
-				skill->blown(src,bl,skill->get_blewcount(skill_id,skill_lv),-1,0);
+				skill->blown(src, bl, skill->get_blewcount(skill_id, skill_lv, src, bl), -1, 0);
 				skill->additional_effect(src,bl,skill_id,skill_lv,BF_MISC,ATK_DEF,tick); //Use Misc rather than weapon to signal passive pushback
 			}
 			break;
@@ -8464,7 +8467,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 
 		case TF_BACKSLIDING: //This is the correct implementation as per packet logging information. [Skotlex]
 			clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
-			skill->blown(src,bl,skill->get_blewcount(skill_id,skill_lv),unit->getdir(bl),0);
+			skill->blown(src, bl, skill->get_blewcount(skill_id, skill_lv, src, bl), unit->getdir(bl), 0);
 			clif->fixpos(bl);
 			break;
 
@@ -10223,7 +10226,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				enum unit_dir dir = unit->getdir(src);
 				if (skill_id == NC_F_SIDESLIDE)
 					dir = unit_get_opposite_dir(dir);
-				skill->blown(src,bl,skill->get_blewcount(skill_id,skill_lv),dir,0);
+				skill->blown(src, bl, skill->get_blewcount(skill_id, skill_lv, src, bl), dir, 0);
 				clif->slide(src,src->x,src->y);
 				clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
 			}
@@ -11227,8 +11230,11 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				} else {
 					clif->skill_nodamage(src,src,skill_id,skill_lv,1);
 					clif->skill_damage(src, ( skill_id == EL_GUST || skill_id == EL_BLAST || skill_id == EL_WILD_STORM )?src:bl, tick, status_get_amotion(src), 0, -30000, 1, skill_id, skill_lv, BDT_SKILL);
-					if( skill_id == EL_WIND_STEP ) // There aren't teleport, just push the master away.
-						skill->blown(src,bl,(rnd()%skill->get_blewcount(skill_id,skill_lv))+1,rnd()%8,0);
+					if (skill_id == EL_WIND_STEP) { // There aren't teleport, just push the master away.
+						int blew_count = skill->get_blewcount(skill_id, skill_lv, src, bl);
+
+						skill->blown(src, bl, (rnd() % blew_count) + 1, rnd() % 8, 0);
+					}
 					sc_start(src, src, type2, 100, skill_lv,
 						 skill->get_time(skill_id, skill_lv, src, bl));
 					sc_start(src, bl, type, 100, skill_lv,
@@ -11295,7 +11301,8 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 					mob->spawn( summon_md );
 					pc->setinvincibletimer(sd,500);// unlock target lock
 					clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
-					skill->blown(src,bl,skill->get_blewcount(skill_id,skill_lv),unit->getdir(bl),0);
+					skill->blown(src, bl, skill->get_blewcount(skill_id, skill_lv, src, bl),
+						     unit->getdir(bl), 0);
 				}
 			}
 			break;
@@ -13617,7 +13624,8 @@ static int skill_unit_onplace(struct skill_unit *src, struct block_list *bl, int
 				break;
 			if (ss == bl) //Also needed to prevent infinite loop crash.
 				break;
-			skill->blown(ss,bl,skill->get_blewcount(sg->skill_id,sg->skill_lv),unit->getdir(bl),0);
+			skill->blown(ss, bl, skill->get_blewcount(sg->skill_id, sg->skill_lv, ss, bl),
+				     unit->getdir(bl), 0);
 			break;
 
 		case UNT_WALLOFTHORN:
@@ -13892,7 +13900,8 @@ static int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *b
 
 		case UNT_SKIDTRAP:
 			{
-				skill->blown(&src->bl,bl,skill->get_blewcount(sg->skill_id,sg->skill_lv),unit->getdir(bl),0);
+				skill->blown(&src->bl, bl, skill->get_blewcount(sg->skill_id, sg->skill_lv, ss, bl),
+					     unit->getdir(bl), 0);
 				sg->unit_id = UNT_USED_TRAPS;
 				clif->changetraplook(&src->bl, UNT_USED_TRAPS);
 				sg->limit=DIFF_TICK32(tick,sg->tick)+1500;
@@ -18023,7 +18032,7 @@ static int skill_trap_splash(struct block_list *bl, va_list ap)
 			break;
 		case UNT_GROUNDDRIFT_FIRE:
 			if(skill->attack(BF_WEAPON,ss,src,bl,sg->skill_id,sg->skill_lv,tick,sg->val1))
-				skill->blown(src,bl,skill->get_blewcount(sg->skill_id,sg->skill_lv),-1,0);
+				skill->blown(src, bl, skill->get_blewcount(sg->skill_id, sg->skill_lv, ss, bl), -1, 0);
 			break;
 		case UNT_ELECTRICSHOCKER:
 			clif->skill_damage(src,bl,tick,0,0,-30000,1,sg->skill_id,sg->skill_lv,BDT_SPLASH);

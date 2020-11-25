@@ -8775,7 +8775,7 @@ static int status_change_start_sub(struct block_list *src, struct block_list *bl
 				break;
 			case SC_NJ_UTSUSEMI:
 				val2=(val1+1)/2; // number of hits blocked
-				val3=skill->get_blewcount(NJ_UTSUSEMI, val1); //knockback value.
+				val3 = skill->get_blewcount(NJ_UTSUSEMI, val1, src, bl); // Knockback value.
 				break;
 			case SC_NJ_BUNSINJYUTSU:
 				val2=(val1+1)/2; // number of hits blocked
