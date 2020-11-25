@@ -787,7 +787,7 @@ static int skill_get_blewcount(int skill_id, int skill_lv, struct block_list *so
 	return skill->dbs->db[idx].blewcount[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_mhp(int skill_id, int skill_lv)
+static int skill_get_mhp(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -4230,7 +4230,7 @@ static int skill_check_condition_mercenary(struct block_list *bl, int skill_id, 
 			return 0;
 		}
 
-		int mhp = skill->get_mhp(skill_id, lv);
+		int mhp = skill->get_mhp(skill_id, lv, bl, NULL);
 
 		if (mhp > 0 && get_percentage(st->hp, st->max_hp) > mhp) {
 			clif->skill_fail(sd, skill_id, USESKILL_FAIL_HP_INSUFFICIENT, 0, 0);
