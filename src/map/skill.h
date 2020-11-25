@@ -1990,7 +1990,7 @@ struct skill_interface {
 	int unit_group_newid;
 	/* accesssors */
 	int (*get_index) (int skill_id);
-	int (*get_type) (int skill_id, int skill_lv);
+	int (*get_type) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_hit) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_inf) (int skill_id);
 	int (*get_ele) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
