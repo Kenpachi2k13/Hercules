@@ -242,7 +242,7 @@ static int skill_get_max(int skill_id)
 	return skill->dbs->db[idx].max;
 }
 
-static int skill_get_range(int skill_id, int skill_lv)
+static int skill_get_range(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -1076,7 +1076,7 @@ static int skill_get_range2(struct block_list *bl, int skill_id, int skill_lv)
 	if( bl->type == BL_MOB && battle_config.mob_ai&0x400 )
 		return 9; //Mobs have a range of 9 regardless of skill used.
 
-	range = skill->get_range(skill_id, skill_lv);
+	range = skill->get_range(skill_id, skill_lv, bl, NULL);
 
 	if( range < 0 ) {
 		if( battle_config.use_weapon_skill_range&bl->type )
@@ -1119,7 +1119,7 @@ static int skill_get_range2(struct block_list *bl, int skill_id, int skill_lv)
 			break;
 		case NJ_KIRIKAGE:
 			if (sd != NULL)
-				range = skill->get_range(NJ_SHADOWJUMP, pc->checkskill(sd, NJ_SHADOWJUMP));
+				range = skill->get_range(NJ_SHADOWJUMP, pc->checkskill(sd, NJ_SHADOWJUMP), bl, NULL);
 			break;
 		/**
 		 * Warlock

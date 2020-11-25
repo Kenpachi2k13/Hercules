@@ -5434,11 +5434,14 @@ static void clif_skillup(struct map_session_data *sd, uint16 skill_id, int skill
 	WFIFOW(fd, 2) = skill_id;
 	WFIFOW(fd, 4) = skill_lv;
 	WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv);
-	WFIFOW(fd, 8) = (flag)?skill->get_range2(&sd->bl, skill_id, skill_lv) : skill->get_range(skill_id, skill_lv);
-	if( flag )
-		WFIFOB(fd,10) = (skill_lv < skill->tree_get_max(skill_id, sd->status.class)) ? 1 : 0;
-	else
-		WFIFOB(fd,10) = 1;
+
+	if (flag != 0) {
+		WFIFOW(fd, 8) = skill->get_range2(&sd->bl, skill_id, skill_lv);
+		WFIFOB(fd, 10) = (skill_lv < skill->tree_get_max(skill_id, sd->status.class)) ? 1 : 0;
+	} else {
+		WFIFOW(fd, 8) = skill->get_range(skill_id, skill_lv, NULL, NULL);
+		WFIFOB(fd, 10) = 1;
+	}
 
 	WFIFOSET(fd, packet_len(0x10e));
 }
@@ -8492,7 +8495,7 @@ static void clif_guild_skillinfo(struct map_session_data *sd)
 			WFIFOW(fd,p+6) = g->skill[i].lv;
 			if ( g->skill[i].lv ) {
 				WFIFOW(fd, p + 8) = skill->get_sp(id, g->skill[i].lv);
-				WFIFOW(fd, p + 10) = skill->get_range(id, g->skill[i].lv);
+				WFIFOW(fd, p + 10) = skill->get_range(id, g->skill[i].lv, NULL, NULL);
 			} else {
 				WFIFOW(fd, p + 8) = 0;
 				WFIFOW(fd, p + 10) = 0;
