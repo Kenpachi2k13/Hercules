@@ -7276,8 +7276,8 @@ typedef int (*HPMHOOK_pre_skill_get_sp_rate) (int *skill_id, int *skill_lv, stru
 typedef int (*HPMHOOK_post_skill_get_sp_rate) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_state) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_state) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-typedef int (*HPMHOOK_pre_skill_get_spiritball) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_spiritball) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_spiritball) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_spiritball) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_item_index) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_item_index) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_get_itemid) (int *skill_id, int *item_idx);

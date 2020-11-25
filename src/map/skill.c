@@ -359,7 +359,7 @@ static int skill_get_state(int skill_id, int skill_lv, struct block_list *source
 	return skill->dbs->db[idx].state[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_spiritball(int skill_id, int skill_lv)
+static int skill_get_spiritball(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -14597,7 +14597,7 @@ static int skill_isammotype(struct map_session_data *sd, int skill_id, int skill
 		skill_id != HT_PHANTASMIC &&
 		skill->get_type(skill_id, skill_lv) == BF_WEAPON &&
 		(skill->get_nk(skill_id, &sd->bl, NULL) & NK_NO_DAMAGE) == 0 &&
-		!skill->get_spiritball(skill_id, skill_lv) //Assume spirit spheres are used as ammo instead.
+		skill->get_spiritball(skill_id, skill_lv, &sd->bl, NULL) == 0 // Assume spirit spheres are used as ammo instead.
 	);
 }
 
