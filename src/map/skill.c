@@ -974,10 +974,12 @@ static int skill_get_unit_target(int skill_id, int skill_lv, struct block_list *
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's unit target as bl type corresponding to the passed level. Defaults to BL_NUL (0) in case of error.
  *
  **/
-static int skill_get_unit_bl_target(int skill_id, int skill_lv)
+static int skill_get_unit_bl_target(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return BL_NUL;
@@ -12893,7 +12895,7 @@ static bool skill_dance_switch(struct skill_unit *su, int flag)
 
 		group->unit_id     = skill->get_unit_id(skill_id, 1, 0, source, NULL);
 		group->target_flag = skill->get_unit_target(skill_id, 1, source, NULL);
-		group->bl_flag     = skill->get_unit_bl_target(skill_id, 1);
+		group->bl_flag     = skill->get_unit_bl_target(skill_id, 1, source, NULL);
 		group->interval    = skill->get_unit_interval(skill_id, 1, source, NULL);
 	} else {
 		//Restore
@@ -13301,7 +13303,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 	group->val2=val2;
 	group->val3=val3;
 	group->target_flag=target;
-	group->bl_flag= skill->get_unit_bl_target(skill_id, skill_lv);
+	group->bl_flag= skill->get_unit_bl_target(skill_id, skill_lv, src, NULL);
 	group->state.ammo_consume = (sd && sd->state.arrow_atk && skill_id != GS_GROUNDDRIFT); //Store if this skill needs to consume ammo.
 	group->state.song_dance = ((unit_flag&(UF_DANCE|UF_SONG)) ? 1 : 0)|((unit_flag&UF_ENSEMBLE) ? 2 : 0); //Signals if this is a song/dance/duet
 	group->state.guildaura = ( skill_id >= GD_LEADERSHIP && skill_id <= GD_HAWKEYES )?1:0;
