@@ -3597,7 +3597,7 @@ static int battle_range_type(struct block_list *src, struct block_list *target, 
 	}
 
 	//based on used skill's range
-	if (skill->get_range2(src, skill_id, skill_lv) < 5)
+	if (skill->get_range2(src, skill_id, skill_lv, target) < 5)
 		return BF_SHORT;
 	return BF_LONG;
 }

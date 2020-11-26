@@ -1560,7 +1560,7 @@ static int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill
 	if (src->type == BL_NPC) // NPC-objects can override cast distance
 		range = AREA_SIZE; // Maximum visible distance before NPC goes out of sight
 	else
-		range = skill->get_range2(src, skill_id, skill_lv); // Skill cast distance from database
+		range = skill->get_range2(src, skill_id, skill_lv, target); // Skill cast distance from database
 
 	// New action request received, delete previous action request if not executed yet
 	if(ud->stepaction || ud->steptimer != INVALID_TIMER)
@@ -1866,7 +1866,7 @@ static int unit_skilluse_pos2(struct block_list *src, short skill_x, short skill
 	if (src->type == BL_NPC) // NPC-objects can override cast distance
 		range = AREA_SIZE; // Maximum visible distance before NPC goes out of sight
 	else
-		range = skill->get_range2(src, skill_id, skill_lv); // Skill cast distance from database
+		range = skill->get_range2(src, skill_id, skill_lv, NULL); // Skill cast distance from database
 
 	// New action request received, delete previous action request if not executed yet
 	if(ud->stepaction || ud->steptimer != INVALID_TIMER)

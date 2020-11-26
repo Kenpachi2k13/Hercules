@@ -1802,7 +1802,7 @@ static void clif_homskillinfoblock(struct map_session_data *sd)
 			WFIFOW(fd, len + 6) = hd->homunculus.hskill[j].lv;
 			if ( hd->homunculus.hskill[j].lv ) {
 				WFIFOW(fd, len + 8) = skill->get_sp(id, hd->homunculus.hskill[j].lv, &hd->bl, NULL);
-				WFIFOW(fd, len + 10) = skill->get_range2(&sd->hd->bl, id, hd->homunculus.hskill[j].lv);
+				WFIFOW(fd, len + 10) = skill->get_range2(&hd->bl, id, hd->homunculus.hskill[j].lv, NULL);
 			} else {
 				WFIFOW(fd, len + 8) = 0;
 				WFIFOW(fd, len + 10) = 0;
@@ -1835,7 +1835,7 @@ static void clif_homskillup(struct map_session_data *sd, uint16 skill_id)
 	WFIFOW(fd,2) = skill_id;
 	WFIFOW(fd,4) = hd->homunculus.hskill[idx].lv;
 	WFIFOW(fd, 6) = skill->get_sp(skill_id, hd->homunculus.hskill[idx].lv, &hd->bl, NULL);
-	WFIFOW(fd,8) = skill->get_range2(&hd->bl, skill_id,hd->homunculus.hskill[idx].lv);
+	WFIFOW(fd,8) = skill->get_range2(&hd->bl, skill_id,hd->homunculus.hskill[idx].lv, NULL);
 	WFIFOB(fd,10) = (hd->homunculus.hskill[idx].lv < skill->get_max(hd->homunculus.hskill[idx].id)) ? 1 : 0;
 	WFIFOSET(fd,packet_len(0x239));
 }
@@ -5313,7 +5313,7 @@ static void clif_playerSkillToPacket(struct map_session_data *sd, struct SKILLDA
 	skillData->level = skill_lv;
 	if (skill_lv > 0) {
 		skillData->sp = skill->get_sp(skillId, skill_lv, &sd->bl, NULL);
-		skillData->range2 = skill->get_range2(&sd->bl, skillId, skill_lv);
+		skillData->range2 = skill->get_range2(&sd->bl, skillId, skill_lv, NULL);
 	} else {
 		skillData->sp = 0;
 		skillData->range2 = 0;
@@ -5438,7 +5438,7 @@ static void clif_skillup(struct map_session_data *sd, uint16 skill_id, int skill
 
 	if (flag != 0) {
 		WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
-		WFIFOW(fd, 8) = skill->get_range2(&sd->bl, skill_id, skill_lv);
+		WFIFOW(fd, 8) = skill->get_range2(&sd->bl, skill_id, skill_lv, NULL);
 		WFIFOB(fd, 10) = (skill_lv < skill->tree_get_max(skill_id, sd->status.class)) ? 1 : 0;
 	} else {
 		WFIFOW(fd, 6) = skill->get_sp(skill_id, skill_lv, NULL, NULL);
@@ -5468,7 +5468,7 @@ static void clif_skillinfo(struct map_session_data *sd, int skill_id, int inf)
 	p->level = skill_lv;
 	if (skill_lv > 0) {
 		p->sp = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
-		p->range2 = skill->get_range2(&sd->bl, skill_id, skill_lv);
+		p->range2 = skill->get_range2(&sd->bl, skill_id, skill_lv, NULL);
 	} else {
 		p->sp = 0;
 		p->range2 = 0;
@@ -6819,7 +6819,7 @@ static void clif_item_skill(struct map_session_data *sd, uint16 skill_id, uint16
 	p->skill_type = type;
 	p->skill_lv = skill_lv;
 	p->skill_sp = skill->get_sp(skill_id, skill_lv, &sd->bl, NULL);
-	p->skill_range = skill->get_range2(&sd->bl, skill_id, skill_lv);
+	p->skill_range = skill->get_range2(&sd->bl, skill_id, skill_lv, NULL);
 	safestrncpy(p->skill_name, skill->get_name(skill_id), NAME_LENGTH);
 	p->up_flag = 0;
 
@@ -7859,7 +7859,7 @@ static void clif_devotion(struct block_list *src, struct map_session_data *tsd)
 
 		skill_lvl = mercenary->checkskill(md, ML_DEVOTION);
 		if (skill_lvl > 0)
-			WBUFW(buf, 26) = skill->get_range2(src, ML_DEVOTION, skill_lvl);
+			WBUFW(buf, 26) = skill->get_range2(src, ML_DEVOTION, skill_lvl, NULL);
 		else
 			WBUFW(buf, 26) = 0;
 	}
@@ -7875,7 +7875,7 @@ static void clif_devotion(struct block_list *src, struct map_session_data *tsd)
 			WBUFL(buf,6+4*i) = sd->devotion[i];
 		skill_lvl = pc->checkskill(sd, CR_DEVOTION);
 		if (skill_lvl > 0)
-			WBUFW(buf, 26) = skill->get_range2(src, CR_DEVOTION, skill_lvl);
+			WBUFW(buf, 26) = skill->get_range2(src, CR_DEVOTION, skill_lvl, NULL);
 		else
 			WBUFW(buf, 26) = 0;
 	}
@@ -18757,7 +18757,7 @@ static void clif_mercenary_skillblock(struct map_session_data *sd)
 		WFIFOW(fd,len+6) = md->db->skill[j].lv;
 		if ( md->db->skill[j].lv ) {
 			WFIFOW(fd, len + 8) = skill->get_sp(id, md->db->skill[j].lv, &md->bl, NULL);
-			WFIFOW(fd, len + 10) = skill->get_range2(&md->bl, id, md->db->skill[j].lv);
+			WFIFOW(fd, len + 10) = skill->get_range2(&md->bl, id, md->db->skill[j].lv, NULL);
 		} else {
 			WFIFOW(fd, len + 8) = 0;
 			WFIFOW(fd, len + 10) = 0;

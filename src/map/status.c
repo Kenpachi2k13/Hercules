@@ -11211,9 +11211,10 @@ static int status_change_end_(struct block_list *bl, enum sc_type type, int tid)
 		case SC_RG_CCONFINE_M:
 			if (sce->val2 > 0) {
 				//Caster has been unlocked... nearby chars need to be unlocked.
-				int range = 1
-					+skill->get_range2(bl, status->sc2skill(type), sce->val1)
-					+skill->get_range2(bl, TF_BACKSLIDING, 1); //Since most people use this to escape the hold....
+				int range = 1;
+
+				range += skill->get_range2(bl, status->sc2skill(type), sce->val1, NULL);
+				range += skill->get_range2(bl, TF_BACKSLIDING, 1, bl); // Since most people use this to escape the hold....
 				map->foreachinarea(status->change_timer_sub,
 					bl->m, bl->x-range, bl->y-range, bl->x+range,bl->y+range,BL_CHAR,bl,sce,type,timer->gettick());
 			}

@@ -1101,14 +1101,14 @@ static int skill_get_casttype2(int index, struct block_list *source, struct bloc
 }
 
 //Returns actual skill range taking into account attack range and AC_OWL [Skotlex]
-static int skill_get_range2(struct block_list *bl, int skill_id, int skill_lv)
+static int skill_get_range2(struct block_list *bl, int skill_id, int skill_lv, struct block_list *target)
 {
 	int range;
 	struct map_session_data *sd = BL_CAST(BL_PC, bl);
 	if( bl->type == BL_MOB && battle_config.mob_ai&0x400 )
 		return 9; //Mobs have a range of 9 regardless of skill used.
 
-	range = skill->get_range(skill_id, skill_lv, bl, NULL);
+	range = skill->get_range(skill_id, skill_lv, bl, target);
 
 	if( range < 0 ) {
 		if( battle_config.use_weapon_skill_range&bl->type )
@@ -1151,7 +1151,7 @@ static int skill_get_range2(struct block_list *bl, int skill_id, int skill_lv)
 			break;
 		case NJ_KIRIKAGE:
 			if (sd != NULL)
-				range = skill->get_range(NJ_SHADOWJUMP, pc->checkskill(sd, NJ_SHADOWJUMP), bl, NULL);
+				range = skill->get_range(NJ_SHADOWJUMP, pc->checkskill(sd, NJ_SHADOWJUMP), bl, target);
 			break;
 		/**
 		 * Warlock
@@ -2552,9 +2552,13 @@ static int skill_additional_effect(struct block_list *src, struct block_list *bl
 					}
 				}
 			}
-			if( battle_config.autospell_check_range &&
-				!battle->check_range(src, tbl, skill->get_range2(src, temp,auto_skill_lv) + (temp == RG_CLOSECONFINE?0:1)) )
+
+			int range = skill->get_range2(src, temp, skill_lv, tbl);
+
+			if (battle_config.autospell_check_range != 0
+			    && !battle->check_range(src, tbl, range + (temp == RG_CLOSECONFINE) ? 0 : 1)) {
 				continue;
+			}
 
 			if (temp == AS_SONICBLOW)
 				pc_stop_attack(sd); //Special case, Sonic Blow autospell should stop the player attacking.
@@ -2688,9 +2692,13 @@ static int skill_onskillusage(struct map_session_data *sd, struct block_list *bl
 				}
 			}
 		}
-		if( battle_config.autospell_check_range &&
-			!battle->check_range(&sd->bl, tbl, skill->get_range2(&sd->bl, temp,skill_lv) + (temp == RG_CLOSECONFINE?0:1)) )
+
+		int range = skill->get_range2(&sd->bl, temp, skill_lv, tbl);
+
+		if (battle_config.autospell_check_range != 0
+		    && !battle->check_range(&sd->bl, tbl, range + (temp == RG_CLOSECONFINE) ? 0 : 1)) {
 			continue;
+		}
 
 		sd->autospell3[i].lock = true;
 		sd->auto_cast_current.type = AUTOCAST_TEMP;
@@ -2906,8 +2914,12 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 				}
 			}
 
-			if( !battle->check_range(src, tbl, skill->get_range2(src, auto_skill_id,auto_skill_lv) + (auto_skill_id == RG_CLOSECONFINE?0:1)) && battle_config.autospell_check_range )
+			int range = skill->get_range2(bl, auto_skill_id, auto_skill_lv, tbl);
+
+			if (!battle->check_range(bl, tbl, range + (auto_skill_id == RG_CLOSECONFINE) ? 0 : 1)
+			    && battle_config.autospell_check_range != 0) {
 				continue;
+			}
 
 			dstsd->auto_cast_current.type = AUTOCAST_TEMP;
 			skill->consume_requirement(dstsd,auto_skill_id,auto_skill_lv,1);
@@ -6298,9 +6310,10 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 				clif->emotion(src, md->db->skill[md->skill_idx].emotion);
 		}
 
-		if(src != target && battle_config.skill_add_range &&
-			!check_distance_bl(src, target, skill->get_range2(src,ud->skill_id,ud->skill_lv)+battle_config.skill_add_range))
-		{
+		int range = skill->get_range2(src, ud->skill_id, ud->skill_lv, target);
+
+		if (src != target && battle_config.skill_add_range != 0
+		    && !check_distance_bl(src, target, range + battle_config.skill_add_range)) {
 			if (sd) {
 				clif->skill_fail(sd, ud->skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 				if(battle_config.skill_out_range_consume) //Consume items anyway. [Skotlex]
@@ -7469,7 +7482,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			if( dstmd )
 			{
 				dstmd->state.provoke_flag = src->id;
-				mob->target(dstmd, src, skill->get_range2(src,skill_id,skill_lv));
+				mob->target(dstmd, src, skill->get_range2(src, skill_id, skill_lv, bl));
 			}
 		}
 			break;
@@ -7522,7 +7535,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 
 				clif->skill_nodamage(src, bl, skill_id, skill_lv,
 						     sc_start4(src, bl, type, 100, src->id, i,
-							       skill->get_range2(src, skill_id, skill_lv), 0,
+							       skill->get_range2(src, skill_id, skill_lv, bl), 0,
 							       skill->get_time2(skill_id, skill_lv, src, bl)));
 				clif->devotion(src, NULL);
 			}
@@ -7919,7 +7932,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				int amount = pc->steal_coin(sd, bl, skill_lv);
 				if (amount > 0 && dstmd != NULL) {
 					dstmd->state.provoke_flag = src->id;
-					mob->target(dstmd, src, skill->get_range2(src, skill_id, skill_lv));
+					mob->target(dstmd, src, skill->get_range2(src, skill_id, skill_lv, bl));
 					clif->skill_nodamage(src, bl, skill_id, amount, 1);
 
 				} else
@@ -9042,7 +9055,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				}
 
 				if(dstmd)
-					mob->target(dstmd,src,skill->get_range2(src,skill_id,skill_lv));
+					mob->target(dstmd, src, skill->get_range2(src, skill_id, skill_lv, bl));
 			}
 			break;
 
@@ -11674,8 +11687,11 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 			//Avoid double checks on instant cast skills. [Skotlex]
 			if (!status->check_skilluse(src, NULL, ud->skill_id, 1))
 				break;
-			if(battle_config.skill_add_range &&
-				!check_distance_blxy(src, ud->skillx, ud->skilly, skill->get_range2(src,ud->skill_id,ud->skill_lv)+battle_config.skill_add_range)) {
+
+			int range = skill->get_range2(src, ud->skill_id, ud->skill_lv, NULL);
+
+			if (battle_config.skill_add_range != 0
+			    && !check_distance_blxy(src, ud->skillx, ud->skilly, range + battle_config.skill_add_range)) {
 				if (sd && battle_config.skill_out_range_consume) //Consume items anyway.
 					skill->consume_requirement(sd,ud->skill_id,ud->skill_lv,3);
 				break;
@@ -17372,7 +17388,9 @@ static void skill_repairweapon(struct map_session_data *sd, int idx)
 	if (item->card[0] == CARD0_PET)
 		return;
 
-	if( sd != target_sd && !battle->check_range(&sd->bl,&target_sd->bl, skill->get_range2(&sd->bl, sd->menuskill_id,sd->menuskill_val2) ) ){
+	int range = skill->get_range2(&sd->bl, sd->menuskill_id, sd->menuskill_val2, &target_sd->bl);
+
+	if (sd != target_sd && !battle->check_range(&sd->bl, &target_sd->bl, range)) {
 		clif->item_repaireffect(sd,idx,1);
 		return;
 	}

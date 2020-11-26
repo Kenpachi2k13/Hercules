@@ -3598,7 +3598,8 @@ static int mob_use_skill(struct mob_data *md, int64 tick, int event)
 		// Execute skill.
 		if (skill->get_casttype(ms[skill_idx].skill_id, &md->bl, NULL) == CAST_GROUND) { // Ground skill.
 			int target_type = ms[skill_idx].target;
-			int skill_range = skill->get_range2(&md->bl, ms[skill_idx].skill_id, ms[skill_idx].skill_lv);
+			int skill_range = skill->get_range2(&md->bl, ms[skill_idx].skill_id, ms[skill_idx].skill_lv,
+							    NULL);
 			struct block_list *bl;
 
 			switch (target_type) {
@@ -3655,7 +3656,8 @@ static int mob_use_skill(struct mob_data *md, int64 tick, int event)
 				continue;
 			}
 		} else { // Targeted skill.
-			int skill_range = skill->get_range2(&md->bl, ms[skill_idx].skill_id, ms[skill_idx].skill_lv);
+			int skill_range = skill->get_range2(&md->bl, ms[skill_idx].skill_id, ms[skill_idx].skill_lv,
+							    NULL);
 			struct block_list *bl;
 
 			switch (ms[skill_idx].target) {
