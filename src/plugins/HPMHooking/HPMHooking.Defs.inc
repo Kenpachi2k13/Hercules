@@ -7338,8 +7338,8 @@ typedef int (*HPMHOOK_pre_skill_get_unit_bl_target) (int *skill_id, int *skill_l
 typedef int (*HPMHOOK_post_skill_get_unit_bl_target) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_get_unit_layout_type) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_unit_layout_type) (int retVal___, int skill_id, int skill_lv);
-typedef int (*HPMHOOK_pre_skill_get_unit_range) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_unit_range) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_unit_range) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_unit_range) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_cooldown) (int *skill_id, int *skill_lv);
 typedef int (*HPMHOOK_post_skill_get_cooldown) (int retVal___, int skill_id, int skill_lv);
 typedef int (*HPMHOOK_pre_skill_tree_get_max) (int *skill_id, int *class);

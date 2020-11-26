@@ -930,7 +930,7 @@ static int skill_get_unit_interval(int skill_id, int skill_lv, struct block_list
 	return skill->dbs->db[idx].unit_interval[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_unit_range(int skill_id, int skill_lv)
+static int skill_get_unit_range(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -4098,7 +4098,7 @@ static int skill_check_unit_range_sub(struct block_list *bl, va_list ap)
 static int skill_check_unit_range(struct block_list *bl, int x, int y, uint16 skill_id, uint16 skill_lv)
 {
 	//Non players do not check for the skill's splash-trigger area.
-	int range = bl->type == BL_PC ? skill->get_unit_range(skill_id, skill_lv):0;
+	int range = (bl->type == BL_PC) ? skill->get_unit_range(skill_id, skill_lv, bl, NULL) : 0;
 	int layout_type = skill->get_unit_layout_type(skill_id,skill_lv);
 	if ( layout_type == - 1 || layout_type > MAX_SQUARE_LAYOUT ) {
 		ShowError("skill_check_unit_range: unsupported layout type %d for skill %d\n",layout_type,skill_id);
@@ -4150,7 +4150,7 @@ static int skill_check_unit_range2(struct block_list *bl, int x, int y, uint16 s
 					ShowError("skill_check_unit_range2: unsupported layout type %d for skill %d\n",layout_type,skill_id);
 					return 0;
 				}
-				range = skill->get_unit_range(skill_id,skill_lv) + layout_type;
+				range = skill->get_unit_range(skill_id, skill_lv, bl, NULL) + layout_type;
 			}
 			break;
 	}
@@ -4531,7 +4531,8 @@ static int skill_timerskill(int tid, int64 tick, int id, intptr_t data)
 						skill->unitsetting(src,skl->skill_id,skl->skill_lv,skl->x,skl->y,skl->flag);
 					break;
 				case GN_CRAZYWEED_ATK: {
-						int dummy = 1, i = skill->get_unit_range(skl->skill_id,skl->skill_lv);
+						int dummy = 1;
+						int i = skill->get_unit_range(skl->skill_id, skl->skill_lv, src, target);
 
 						map->foreachinarea(skill->cell_overlap,src->m,skl->x-i,skl->y-i,skl->x+i,skl->y+i,BL_SKILL,skl->skill_id,&dummy,src);
 					}
@@ -12569,7 +12570,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 		 **/
 		case AB_EPICLESIS:
 			if( (sg = skill->unitsetting(src, skill_id, skill_lv, x, y, 0)) ) {
-				r = skill->get_unit_range(skill_id, skill_lv);
+				r = skill->get_unit_range(skill_id, skill_lv, src, NULL);
 				map->foreachinarea(skill->area_sub, src->m, x - r, y - r, x + r, y + r, BL_CHAR, src, ALL_RESURRECTION, 1, tick, flag|BCT_NOENEMY|1,skill->castend_nodamage_id);
 			}
 			break;
@@ -12699,7 +12700,7 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 
 			if( !ud ) break;
 
-			r = skill->get_unit_range(GN_DEMONIC_FIRE, skill_lv);
+			r = skill->get_unit_range(GN_DEMONIC_FIRE, skill_lv, src, NULL);
 
 			for (i = 0; i < MAX_SKILLUNITGROUP && ud->skillunit[i]; i++) {
 				if (ud->skillunit[i]->skill_id != GN_DEMONIC_FIRE)
@@ -12923,7 +12924,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 	nullpo_retr(NULL, src);
 
 	limit = skill->get_time(skill_id, skill_lv, src, NULL);
-	range = skill->get_unit_range(skill_id,skill_lv);
+	range = skill->get_unit_range(skill_id, skill_lv, src, NULL);
 	interval = skill->get_unit_interval(skill_id, skill_lv, src, NULL);
 	target = skill->get_unit_target(skill_id, skill_lv);
 	unit_flag = skill->get_unit_flag(skill_id);
@@ -17681,10 +17682,12 @@ static int skill_frostjoke_scream(struct block_list *bl, va_list ap)
  *------------------------------------------*/
 static void skill_unitsetmapcell(struct skill_unit *src, uint16 skill_id, uint16 skill_lv, cell_t cell, bool flag)
 {
-	int range = skill->get_unit_range(skill_id,skill_lv);
+	nullpo_retv(src);
+
+	struct block_list *source = (src->group != NULL) ? map->id2bl(src->group->src_id) : NULL;
+	int range = skill->get_unit_range(skill_id, skill_lv, source, NULL);
 	int x,y;
 
-	nullpo_retv(src);
 	for( y = src->bl.y - range; y <= src->bl.y + range; ++y )
 		for( x = src->bl.x - range; x <= src->bl.x + range; ++x )
 			map->list[src->bl.m].setcell(src->bl.m, x, y, cell, flag);
