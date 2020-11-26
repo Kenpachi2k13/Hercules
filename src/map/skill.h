@@ -2038,7 +2038,7 @@ struct skill_interface {
 	int (*get_unit_bl_target) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_unit_layout_type) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_unit_range) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-	int (*get_cooldown) (int skill_id, int skill_lv);
+	int (*get_cooldown) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*tree_get_max) (int skill_id, int class);
 	const char *(*get_name) (int skill_id);
 	const char *(*get_desc) (int skill_id);

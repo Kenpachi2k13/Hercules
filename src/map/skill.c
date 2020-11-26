@@ -1018,7 +1018,7 @@ static int skill_get_unit_layout_type(int skill_id, int skill_lv, struct block_l
 	return skill->dbs->db[idx].unit_layout_type[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_cooldown(int skill_id, int skill_lv)
+static int skill_get_cooldown(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -5703,7 +5703,7 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 					sd->ud.canact_tick = tick + skill->delay_fix(src, spell_skill_id, spell_skill_lv);
 					clif->status_change(src, status->get_sc_icon(SC_POSTDELAY), status->get_sc_relevant_bl_types(SC_POSTDELAY), 1, skill->delay_fix(src, spell_skill_id, spell_skill_lv), 0, 0, 0);
 
-					cooldown = skill->get_cooldown(spell_skill_id, spell_skill_lv);
+					cooldown = skill->get_cooldown(spell_skill_id, spell_skill_lv, src, bl);
 					for (i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id; i++) {
 						if (sd->skillcooldown[i].id == spell_skill_id){
 							cooldown += sd->skillcooldown[i].val;
@@ -6337,8 +6337,9 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 		}
 
 		if (sd) { // Cooldown application
-			int i, cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv);
-			for (i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
+			int cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv, src, target);
+
+			for (int i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id != 0; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
 				if (sd->skillcooldown[i].id == ud->skill_id){
 					cooldown += sd->skillcooldown[i].val;
 					break;
@@ -6636,7 +6637,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			if(s_src && !skill->check_unit_range(s_src, s_src->x, s_src->y, skill_id, skill_lv))
 			    ret |= skill->castend_pos2(s_src,s_src->x,s_src->y,skill_id,skill_lv,tick,flag); //cast on master
 			if (hd)
-			    skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv));
+			    skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv, src, bl));
 			return ret;
 		    }
 		    break;
@@ -9462,7 +9463,8 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				y = src->y;
 				if (hd) {
 #ifdef RENEWAL
-					skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv));
+					skill->blockhomun_start(hd, skill_id,
+								skill->get_cooldown(skill_id, skill_lv, src, bl));
 #else
 					skill->blockhomun_start(hd, skill_id, skill->get_time2(skill_id, skill_lv, src, bl));
 #endif
@@ -11487,7 +11489,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				sc_start2(src, bl, type, 100, skill_lv, hd->homunculus.level,
 					  skill->get_time(skill_id, skill_lv, src, bl));
 
-				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv));
+				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv, src, bl));
 			}
 			break;
 
@@ -11495,7 +11497,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 		case MH_PAIN_KILLER:
 			sc_start(src, bl, type, 100, skill_lv, skill->get_time(skill_id, skill_lv, src, bl));
 			if (hd)
-				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv));
+				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv, src, bl));
 			break;
 		case MH_SUMMON_LEGION:
 		{
@@ -11530,7 +11532,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 				}
 			}
 			if (hd)
-				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv));
+				skill->blockhomun_start(hd, skill_id, skill->get_cooldown(skill_id, skill_lv, src, bl));
 		}
 			break;
 		case SO_ELEMENTAL_SHIELD:/* somehow its handled outside this switch, so we need a empty case otherwise default would be triggered. */
@@ -11703,8 +11705,9 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 		}
 
 		if (sd) { //Cooldown application
-			int i, cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv);
-			for (i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
+			int cooldown = skill->get_cooldown(ud->skill_id, ud->skill_lv, src, NULL);
+
+			for (int i = 0; i < ARRAYLENGTH(sd->skillcooldown) && sd->skillcooldown[i].id != 0; i++) { // Increases/Decreases cooldown of a skill by item/card bonuses.
 				if (sd->skillcooldown[i].id == ud->skill_id){
 					cooldown += sd->skillcooldown[i].val;
 					break;
