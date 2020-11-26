@@ -1003,7 +1003,7 @@ static int skill_get_unit_flag(int skill_id, struct block_list *source, struct b
 	return skill->dbs->db[idx].unit_flag;
 }
 
-static int skill_get_unit_layout_type(int skill_id, int skill_lv)
+static int skill_get_unit_layout_type(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -1540,7 +1540,7 @@ static void skill_validate_autocast_data(struct map_session_data *sd, int skill_
 
 static struct s_skill_unit_layout *skill_get_unit_layout(uint16 skill_id, uint16 skill_lv, struct block_list *src, int x, int y)
 {
-	int pos = skill->get_unit_layout_type(skill_id,skill_lv);
+	int pos = skill->get_unit_layout_type(skill_id, skill_lv, src, NULL);
 
 	nullpo_retr(&skill->dbs->unit_layout[0], src);
 	if (pos < -1 || pos >= MAX_SKILL_UNIT_LAYOUT) {
@@ -4097,7 +4097,7 @@ static int skill_check_unit_range(struct block_list *bl, int x, int y, uint16 sk
 {
 	//Non players do not check for the skill's splash-trigger area.
 	int range = (bl->type == BL_PC) ? skill->get_unit_range(skill_id, skill_lv, bl, NULL) : 0;
-	int layout_type = skill->get_unit_layout_type(skill_id,skill_lv);
+	int layout_type = skill->get_unit_layout_type(skill_id, skill_lv, bl, NULL);
 	if ( layout_type == - 1 || layout_type > MAX_SQUARE_LAYOUT ) {
 		ShowError("skill_check_unit_range: unsupported layout type %d for skill %d\n",layout_type,skill_id);
 		return 0;
@@ -4143,7 +4143,7 @@ static int skill_check_unit_range2(struct block_list *bl, int x, int y, uint16 s
 			range = 0;
 			break;
 		default: {
-				int layout_type = skill->get_unit_layout_type(skill_id,skill_lv);
+				int layout_type = skill->get_unit_layout_type(skill_id, skill_lv, bl, NULL);
 				if (layout_type==-1 || layout_type>MAX_SQUARE_LAYOUT) {
 					ShowError("skill_check_unit_range2: unsupported layout type %d for skill %d\n",layout_type,skill_id);
 					return 0;
