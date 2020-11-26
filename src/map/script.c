@@ -23933,7 +23933,7 @@ static int buildin_mobuseskill_sub(struct block_list *bl, va_list ap)
 	if( md->ud.skilltimer != INVALID_TIMER ) // Cancel the casting skill.
 		unit->skillcastcancel(bl,0);
 
-	if( skill->get_casttype(skill_id) == CAST_GROUND )
+	if (skill->get_casttype(skill_id, &md->bl, tbl) == CAST_GROUND)
 		unit->skilluse_pos2(&md->bl, tbl->x, tbl->y, skill_id, skill_lv, casttime, cancel);
 	else
 		unit->skilluse_id2(&md->bl, tbl->id, skill_id, skill_lv, casttime, cancel);

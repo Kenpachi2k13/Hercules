@@ -6490,7 +6490,8 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 		sp = skill->get_sp(skill_id, skill_lv, src, target) * 2 / 3;
 
 		if (status->charge(src, 0, sp)) {
-			skill->castend_type(skill->get_casttype(skill_id), src, target, skill_id, skill_lv, tick, flag);
+			skill->castend_type(skill->get_casttype(skill_id, src, target), src, target, skill_id, skill_lv,
+					    tick, flag);
 		}
 	}
 	if (sd) {
@@ -6504,7 +6505,7 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 
 			if (r_skill != AL_HOLYLIGHT && r_skill != PR_MAGNUS) {
 				int type;
-				if( (type = skill->get_casttype(r_skill)) == CAST_GROUND ) {
+				if ((type = skill->get_casttype(r_skill, src, target)) == CAST_GROUND) {
 					int maxcount = 0;
 
 					if ((BL_PC & battle_config.skill_reiteration) == 0

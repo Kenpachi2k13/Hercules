@@ -1064,7 +1064,7 @@ static int skill_tree_get_max(int skill_id, int class)
 		return skill->get_max(skill_id);
 }
 
-static int skill_get_casttype(int skill_id)
+static int skill_get_casttype(int skill_id, struct block_list *source, struct block_list *target)
 {
 	int inf = skill->get_inf(skill_id);
 	if (inf&(INF_GROUND_SKILL))
@@ -1076,7 +1076,7 @@ static int skill_get_casttype(int skill_id)
 			return CAST_DAMAGE; //Combo skill.
 		return CAST_NODAMAGE;
 	}
-	if ((skill->get_nk(skill_id, NULL, NULL) & NK_NO_DAMAGE) != 0)
+	if ((skill->get_nk(skill_id, source, target) & NK_NO_DAMAGE) != 0)
 		return CAST_NODAMAGE;
 	return CAST_DAMAGE;
 }
@@ -2528,7 +2528,7 @@ static int skill_additional_effect(struct block_list *src, struct block_list *bl
 
 			tbl = (sd->autospell[i].id < 0) ? src : bl;
 
-			if( (type = skill->get_casttype(temp)) == CAST_GROUND ) {
+			if ((type = skill->get_casttype(temp, src, tbl)) == CAST_GROUND) {
 				int maxcount = 0;
 				if ((BL_PC & battle_config.skill_reiteration) == 0
 				    && (skill->get_unit_flag(temp, src, tbl) & UF_NOREITERATION) != 0
@@ -2664,7 +2664,7 @@ static int skill_onskillusage(struct map_session_data *sd, struct block_list *bl
 
 		tbl = (sd->autospell3[i].id < 0) ? &sd->bl : bl;
 
-		if( (type = skill->get_casttype(temp)) == CAST_GROUND ) {
+		if ((type = skill->get_casttype(temp, &sd->bl, tbl)) == CAST_GROUND) {
 			int maxcount = 0;
 			if ((BL_PC & battle_config.skill_reiteration) == 0
 			    && (skill->get_unit_flag(temp, &sd->bl, tbl) & UF_NOREITERATION) != 0
@@ -2881,7 +2881,7 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 
 			tbl = (dstsd->autospell2[i].id < 0) ? bl : src;
 
-			if( (type = skill->get_casttype(auto_skill_id)) == CAST_GROUND ) {
+			if ((type = skill->get_casttype(auto_skill_id, bl, tbl)) == CAST_GROUND) {
 				int maxcount = 0;
 				if ((BL_PC & battle_config.skill_reiteration) == 0
 				    && (skill->get_unit_flag(auto_skill_id, bl, tbl) & UF_NOREITERATION) != 0
@@ -5699,7 +5699,8 @@ static int skill_castend_damage_id(struct block_list *src, struct block_list *bl
 					if( !skill->check_condition_castbegin(sd, spell_skill_id, spell_skill_lv) )
 						break;
 
-					skill->castend_type(skill->get_casttype(spell_skill_id), src, bl, spell_skill_id, spell_skill_lv, tick, 0);
+					skill->castend_type(skill->get_casttype(spell_skill_id, src, bl), src, bl,
+							    spell_skill_id, spell_skill_lv, tick, 0);
 					sd->ud.canact_tick = tick + skill->delay_fix(src, spell_skill_id, spell_skill_lv);
 					clif->status_change(src, status->get_sc_icon(SC_POSTDELAY), status->get_sc_relevant_bl_types(SC_POSTDELAY), 1, skill->delay_fix(src, spell_skill_id, spell_skill_lv), 0, 0, 0);
 
@@ -6393,7 +6394,7 @@ static int skill_castend_id(int tid, int64 tick, int id, intptr_t data)
 			status_change_end(src,SC_CAMOUFLAGE, INVALID_TIMER);
 #endif // 0
 
-		if (skill->get_casttype(ud->skill_id) == CAST_NODAMAGE)
+		if (skill->get_casttype(ud->skill_id, src, target) == CAST_NODAMAGE)
 			skill->castend_nodamage_id(src,target,ud->skill_id,ud->skill_lv,tick,flag);
 		else
 			skill->castend_damage_id(src,target,ud->skill_id,ud->skill_lv,tick,flag);
@@ -6899,7 +6900,11 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 						}
 						if (!target_id)
 							break;
-						if (skill->get_casttype(abra_skill_id) == CAST_GROUND) {
+
+						int cast_type = skill->get_casttype(abra_skill_id, src,
+										    map->id2bl(target_id));
+
+						if (cast_type == CAST_GROUND) {
 							bl = map->id2bl(target_id);
 							if (!bl) bl = src;
 							unit->skilluse_pos(src, bl->x, bl->y, abra_skill_id, abra_skill_lv);
@@ -10925,7 +10930,11 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 						}
 						if (!target_id)
 							break;
-						if (skill->get_casttype(improv_skill_id) == CAST_GROUND) {
+
+						int cast_type = skill->get_casttype(improv_skill_id, src,
+										    map->id2bl(target_id));
+
+						if (cast_type == CAST_GROUND) {
 							bl = map->id2bl(target_id);
 							if (!bl) bl = src;
 							unit->skilluse_pos(src, bl->x, bl->y, improv_skill_id, improv_skill_lv);
