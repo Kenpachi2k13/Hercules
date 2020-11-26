@@ -2034,7 +2034,7 @@ struct skill_interface {
 	int (*get_blewcount) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_unit_flag) (int skill_id);
 	int (*get_unit_target) (int skill_id, int skill_lv);
-	int (*get_unit_interval) (int skill_id, int skill_lv);
+	int (*get_unit_interval) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*get_unit_bl_target) (int skill_id, int skill_lv);
 	int (*get_unit_layout_type) (int skill_id, int skill_lv);
 	int (*get_unit_range) (int skill_id, int skill_lv);

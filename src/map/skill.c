@@ -911,10 +911,12 @@ static int skill_get_unit_id(int skill_id, int skill_lv, int flag, struct block_
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's unit interval corresponding to the passed level. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_unit_interval(int skill_id, int skill_lv)
+static int skill_get_unit_interval(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -12632,7 +12634,8 @@ static int skill_castend_pos2(struct block_list *src, int x, int y, uint16 skill
 			skill->unitsetting(src, skill_id, skill_lv, x, y, 0); // Set bomb on current Position
 			clif->skill_nodamage(src, src, skill_id, skill_lv, 1);
 			if( skill->blown(src, src, 3 * skill_lv, unit->getdir(src), 0) && sc) {
-				sc_start(src, src, SC__FEINTBOMB_MASTER, 100, 0, skill->get_unit_interval(SC_FEINTBOMB, skill_lv));
+				sc_start(src, src, SC__FEINTBOMB_MASTER, 100, 0,
+					 skill->get_unit_interval(SC_FEINTBOMB, skill_lv, src, NULL));
 			}
 			break;
 
@@ -12882,10 +12885,13 @@ static bool skill_dance_switch(struct skill_unit *su, int flag)
 		// replace
 		group->skill_id    = skill_id;
 		group->skill_lv    = 1;
-		group->unit_id     = skill->get_unit_id(skill_id, 1, 0, map->id2bl(group->src_id), NULL);
+
+		struct block_list *source = map->id2bl(group->src_id);
+
+		group->unit_id     = skill->get_unit_id(skill_id, 1, 0, source, NULL);
 		group->target_flag = skill->get_unit_target(skill_id, 1);
 		group->bl_flag     = skill->get_unit_bl_target(skill_id, 1);
-		group->interval    = skill->get_unit_interval(skill_id, 1);
+		group->interval    = skill->get_unit_interval(skill_id, 1, source, NULL);
 	} else {
 		//Restore
 		group->skill_id    = backup.skill_id;
@@ -12918,7 +12924,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 
 	limit = skill->get_time(skill_id, skill_lv, src, NULL);
 	range = skill->get_unit_range(skill_id,skill_lv);
-	interval = skill->get_unit_interval(skill_id, skill_lv);
+	interval = skill->get_unit_interval(skill_id, skill_lv, src, NULL);
 	target = skill->get_unit_target(skill_id, skill_lv);
 	unit_flag = skill->get_unit_flag(skill_id);
 	layout = skill->get_unit_layout(skill_id,skill_lv,src,x,y);
