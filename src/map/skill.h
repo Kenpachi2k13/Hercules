@@ -2044,7 +2044,7 @@ struct skill_interface {
 	const char *(*get_desc) (int skill_id);
 	/* whether its CAST_GROUND, CAST_DAMAGE or CAST_NODAMAGE */
 	int (*get_casttype) (int skill_id, struct block_list *source, struct block_list *target);
-	int (*get_casttype2) (int index);
+	int (*get_casttype2) (int index, struct block_list *source, struct block_list *target);
 	bool (*is_combo) (int skill_id);
 	int (*name2id) (const char* name);
 	int (*isammotype) (struct map_session_data *sd, int skill_id, int skill_lv);

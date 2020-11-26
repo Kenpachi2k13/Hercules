@@ -5679,7 +5679,7 @@ static bool mob_skill_db_libconfig_sub_skill(struct config_setting_t *it, int n,
 	ms->target = i32;
 
 	// Check the target condition for non-ground skills. (Ground skills can use every target.)
-	if (skill->get_casttype2(skill->get_index(skill_id)) != CAST_GROUND && ms->target > MST_MASTER) {
+	if (skill->get_casttype2(skill->get_index(skill_id), NULL, NULL) != CAST_GROUND && ms->target > MST_MASTER) {
 		ShowWarning("%s: Wrong skill target %d for non-ground skill %d (%s) in %s %s (%d), defaulting to MST_TARGET.\n",
 			    __func__, ms->target, skill_id, skill_name, mob_str, mob_sprite, mob_id);
 		ms->target = MST_TARGET;

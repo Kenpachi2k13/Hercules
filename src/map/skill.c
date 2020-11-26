@@ -1081,7 +1081,7 @@ static int skill_get_casttype(int skill_id, struct block_list *source, struct bl
 	return CAST_DAMAGE;
 }
 
-static int skill_get_casttype2(int index)
+static int skill_get_casttype2(int index, struct block_list *source, struct block_list *target)
 {
 	int inf;
 	Assert_retr(CAST_NODAMAGE, index < MAX_SKILL_DB);
@@ -1095,7 +1095,7 @@ static int skill_get_casttype2(int index)
 			return CAST_DAMAGE; //Combo skill.
 		return CAST_NODAMAGE;
 	}
-	if (skill->dbs->db[index].nk&NK_NO_DAMAGE)
+	if ((skill->get_nk(skill->dbs->db[index].nameid, source, target) & NK_NO_DAMAGE) != 0)
 		return CAST_NODAMAGE;
 	return CAST_DAMAGE;
 }
