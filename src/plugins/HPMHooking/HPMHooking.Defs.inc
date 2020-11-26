@@ -7550,8 +7550,8 @@ typedef void (*HPMHOOK_pre_skill_brandishspear_first) (struct square **tc, enum 
 typedef void (*HPMHOOK_post_skill_brandishspear_first) (struct square *tc, enum unit_dir dir, int16 x, int16 y);
 typedef void (*HPMHOOK_pre_skill_brandishspear_dir) (struct square **tc, enum unit_dir *dir, int *are);
 typedef void (*HPMHOOK_post_skill_brandishspear_dir) (struct square *tc, enum unit_dir dir, int are);
-typedef int (*HPMHOOK_pre_skill_get_fixed_cast) (int *skill_id, int *skill_lv);
-typedef int (*HPMHOOK_post_skill_get_fixed_cast) (int retVal___, int skill_id, int skill_lv);
+typedef int (*HPMHOOK_pre_skill_get_fixed_cast) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_fixed_cast) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_sit_count) (struct block_list **bl, va_list ap);
 typedef int (*HPMHOOK_post_skill_sit_count) (int retVal___, struct block_list *bl, va_list ap);
 typedef int (*HPMHOOK_pre_skill_sit_in) (struct block_list **bl, va_list ap);

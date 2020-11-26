@@ -2144,7 +2144,7 @@ struct skill_interface {
 	int (*check_condition_mob_master_sub) (struct block_list *bl, va_list ap);
 	void (*brandishspear_first) (struct square *tc, enum unit_dir dir, int16 x, int16 y);
 	void (*brandishspear_dir) (struct square* tc, enum unit_dir dir, int are);
-	int (*get_fixed_cast) (int skill_id, int skill_lv);
+	int (*get_fixed_cast) (int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 	int (*sit_count) (struct block_list *bl, va_list ap);
 	int (*sit_in) (struct block_list *bl, va_list ap);
 	int (*sit_out) (struct block_list *bl, va_list ap);

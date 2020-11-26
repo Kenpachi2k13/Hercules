@@ -1033,7 +1033,7 @@ static int skill_get_cooldown(int skill_id, int skill_lv, struct block_list *sou
 	return skill->dbs->db[idx].cooldown[skill_get_lvl_idx(skill_lv)];
 }
 
-static int skill_get_fixed_cast(int skill_id, int skill_lv)
+static int skill_get_fixed_cast(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -16926,7 +16926,10 @@ static int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, 
 #ifdef RENEWAL_CAST
 	struct status_change *sc = status->get_sc(bl);
 	struct map_session_data *sd = BL_CAST(BL_PC,bl);
-	int fixed = skill->get_fixed_cast(skill_id, skill_lv), fixcast_r = 0, varcast_r = 0, i = 0;
+	int fixed = skill->get_fixed_cast(skill_id, skill_lv, bl, NULL);
+	int fixcast_r = 0;
+	int varcast_r = 0;
+	int i = 0;
 
 	if( time < 0 )
 		return 0;
