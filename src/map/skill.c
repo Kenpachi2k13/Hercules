@@ -950,10 +950,12 @@ static int skill_get_unit_range(int skill_id, int skill_lv, struct block_list *s
  *
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's unit target corresponding to the passed level. Defaults to BCT_NOONE (0) in case of error.
  *
  **/
-static int skill_get_unit_target(int skill_id, int skill_lv)
+static int skill_get_unit_target(int skill_id, int skill_lv, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return BCT_NOONE;
@@ -12890,7 +12892,7 @@ static bool skill_dance_switch(struct skill_unit *su, int flag)
 		struct block_list *source = map->id2bl(group->src_id);
 
 		group->unit_id     = skill->get_unit_id(skill_id, 1, 0, source, NULL);
-		group->target_flag = skill->get_unit_target(skill_id, 1);
+		group->target_flag = skill->get_unit_target(skill_id, 1, source, NULL);
 		group->bl_flag     = skill->get_unit_bl_target(skill_id, 1);
 		group->interval    = skill->get_unit_interval(skill_id, 1, source, NULL);
 	} else {
@@ -12926,7 +12928,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 	limit = skill->get_time(skill_id, skill_lv, src, NULL);
 	range = skill->get_unit_range(skill_id, skill_lv, src, NULL);
 	interval = skill->get_unit_interval(skill_id, skill_lv, src, NULL);
-	target = skill->get_unit_target(skill_id, skill_lv);
+	target = skill->get_unit_target(skill_id, skill_lv, src, NULL);
 	unit_flag = skill->get_unit_flag(skill_id);
 	layout = skill->get_unit_layout(skill_id,skill_lv,src,x,y);
 
