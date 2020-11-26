@@ -3874,9 +3874,10 @@ static int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 
 			continue;
 
 		/// Normal aggressive mob. Disable skills that cannot help fighting against players. (Those with flags UF_NOMOB and UF_NOPC are specific to always aid players!) [Skotlex]
-		if (flag == 0 && skill->get_unit_id(skill_id, sd->status.skill[idx].lv, 0) != 0 &&
-		    (skill->get_unit_flag(skill_id) & (UF_NOMOB | UF_NOPC)) > 0)
+		if (flag == 0 && skill->get_unit_id(skill_id, sd->status.skill[idx].lv, 0, NULL, NULL) != 0
+		    && (skill->get_unit_flag(skill_id) & (UF_NOMOB | UF_NOPC)) > 0) {
 			continue;
+		}
 
 		/// The clone should be able to cast the skill. (E.g. have the required weapon.) [bugreport:5299]
 		if (skill->check_condition_castbegin(sd, skill_id, sd->status.skill[idx].lv) == 0)

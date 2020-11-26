@@ -886,10 +886,12 @@ static int skill_get_type(int skill_id, int skill_lv, struct block_list *source,
  * @param skill_id The skill's ID.
  * @param skill_lv The skill's level.
  * @param flag
+ * @param source The object which cast the skill. (For use by plugins.)
+ * @param target The skill's target object. (For use by plugins.)
  * @return The skill's unit ID corresponding to the passed level. Defaults to 0 in case of error.
  *
  **/
-static int skill_get_unit_id(int skill_id, int skill_lv, int flag)
+static int skill_get_unit_id(int skill_id, int skill_lv, int flag, struct block_list *source, struct block_list *target)
 {
 	if (skill_id == 0)
 		return 0;
@@ -6660,7 +6662,7 @@ static int skill_castend_nodamage_id(struct block_list *src, struct block_list *
 			if (skill->castend_nodamage_id_undead_unknown(src, bl, &skill_id, &skill_lv, &tick, &flag))
 			{
 				//Skill is actually ground placed.
-				if (src == bl && skill->get_unit_id(skill_id, skill_lv, 0) != 0)
+				if (src == bl && skill->get_unit_id(skill_id, skill_lv, 0, src, bl) != 0)
 					return skill->castend_pos2(src,bl->x,bl->y,skill_id,skill_lv,tick,0);
 			}
 			break;
@@ -12880,7 +12882,7 @@ static bool skill_dance_switch(struct skill_unit *su, int flag)
 		// replace
 		group->skill_id    = skill_id;
 		group->skill_lv    = 1;
-		group->unit_id     = skill->get_unit_id(skill_id, 1, 0);
+		group->unit_id     = skill->get_unit_id(skill_id, 1, 0, map->id2bl(group->src_id), NULL);
 		group->target_flag = skill->get_unit_target(skill_id, 1);
 		group->bl_flag     = skill->get_unit_bl_target(skill_id, 1);
 		group->interval    = skill->get_unit_interval(skill_id, 1);
@@ -13281,7 +13283,11 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 	}
 
 	nullpo_retr(NULL, layout);
-	nullpo_retr(NULL, group = skill->init_unitgroup(src, layout->count, skill_id, skill_lv, skill->get_unit_id(skill_id, skill_lv, flag & 1) + subunt, limit, interval));
+
+	int unit_id = skill->get_unit_id(skill_id, skill_lv, flag & 1, src, NULL);
+
+	nullpo_retr(NULL, group = skill->init_unitgroup(src, layout->count, skill_id, skill_lv, unit_id + subunt,
+							limit, interval));
 	group->val1=val1;
 	group->val2=val2;
 	group->val3=val3;
@@ -18822,7 +18828,8 @@ static int skill_unit_timer_sub(union DBKey key, struct DBData *data, va_list ap
 
 			case UNT_WARP_ACTIVE:
 				// warp portal opens (morph to a UNT_WARP_WAITING cell)
-				group->unit_id = skill->get_unit_id(group->skill_id, group->skill_lv, 1); // UNT_WARP_WAITING
+				group->unit_id = skill->get_unit_id(group->skill_id, group->skill_lv, 1,
+								    map->id2bl(group->src_id), NULL); // UNT_WARP_WAITING
 				clif->changelook(&su->bl, LOOK_BASE, group->unit_id);
 				// restart timers
 				group->limit = skill->get_time(group->skill_id, group->skill_lv,

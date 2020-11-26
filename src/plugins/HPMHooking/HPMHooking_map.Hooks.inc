@@ -77968,15 +77968,15 @@ int HP_skill_get_ammo_qty(int skill_id, int skill_lv, struct block_list *source,
 	}
 	return retVal___;
 }
-int HP_skill_get_unit_id(int skill_id, int skill_lv, int flag) {
+int HP_skill_get_unit_id(int skill_id, int skill_lv, int flag, struct block_list *source, struct block_list *target) {
 	int hIndex = 0;
 	int retVal___ = 0;
 	if (HPMHooks.count.HP_skill_get_unit_id_pre > 0) {
-		int (*preHookFunc) (int *skill_id, int *skill_lv, int *flag);
+		int (*preHookFunc) (int *skill_id, int *skill_lv, int *flag, struct block_list **source, struct block_list **target);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_skill_get_unit_id_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_skill_get_unit_id_pre[hIndex].func;
-			retVal___ = preHookFunc(&skill_id, &skill_lv, &flag);
+			retVal___ = preHookFunc(&skill_id, &skill_lv, &flag, &source, &target);
 		}
 		if (*HPMforce_return) {
 			*HPMforce_return = false;
@@ -77984,13 +77984,13 @@ int HP_skill_get_unit_id(int skill_id, int skill_lv, int flag) {
 		}
 	}
 	{
-		retVal___ = HPMHooks.source.skill.get_unit_id(skill_id, skill_lv, flag);
+		retVal___ = HPMHooks.source.skill.get_unit_id(skill_id, skill_lv, flag, source, target);
 	}
 	if (HPMHooks.count.HP_skill_get_unit_id_post > 0) {
-		int (*postHookFunc) (int retVal___, int skill_id, int skill_lv, int flag);
+		int (*postHookFunc) (int retVal___, int skill_id, int skill_lv, int flag, struct block_list *source, struct block_list *target);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_skill_get_unit_id_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_skill_get_unit_id_post[hIndex].func;
-			retVal___ = postHookFunc(retVal___, skill_id, skill_lv, flag);
+			retVal___ = postHookFunc(retVal___, skill_id, skill_lv, flag, source, target);
 		}
 	}
 	return retVal___;
