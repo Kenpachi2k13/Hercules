@@ -993,7 +993,7 @@ static int skill_get_unit_bl_target(int skill_id, int skill_lv, struct block_lis
 	return (skill->dbs->db[idx].unit_target[skill_get_lvl_idx(skill_lv)] & BL_ALL);
 }
 
-static int skill_get_unit_flag(int skill_id)
+static int skill_get_unit_flag(int skill_id, struct block_list *source, struct block_list *target)
 {
 	int idx;
 	if (skill_id == 0)
@@ -2530,16 +2530,14 @@ static int skill_additional_effect(struct block_list *src, struct block_list *bl
 
 			if( (type = skill->get_casttype(temp)) == CAST_GROUND ) {
 				int maxcount = 0;
-				if( !(BL_PC&battle_config.skill_reiteration) &&
-					skill->get_unit_flag(temp)&UF_NOREITERATION &&
-					skill->check_unit_range(src,tbl->x,tbl->y,temp,auto_skill_lv)
-				  ) {
+				if ((BL_PC & battle_config.skill_reiteration) == 0
+				    && (skill->get_unit_flag(temp, src, tbl) & UF_NOREITERATION) != 0
+				    && skill->check_unit_range(src, tbl->x, tbl->y, temp, auto_skill_lv) != 0) {
 					continue;
 				}
-				if( BL_PC&battle_config.skill_nofootset &&
-					skill->get_unit_flag(temp)&UF_NOFOOTSET &&
-					skill->check_unit_range2(src,tbl->x,tbl->y,temp,auto_skill_lv)
-				  ) {
+				if ((BL_PC & battle_config.skill_nofootset) != 0
+				    && (skill->get_unit_flag(temp, src, tbl) & UF_NOFOOTSET) != 0
+				    && skill->check_unit_range2(src, tbl->x, tbl->y, temp, auto_skill_lv) != 0) {
 					continue;
 				}
 				if ((BL_PC & battle_config.land_skill_limit) != 0
@@ -2668,16 +2666,14 @@ static int skill_onskillusage(struct map_session_data *sd, struct block_list *bl
 
 		if( (type = skill->get_casttype(temp)) == CAST_GROUND ) {
 			int maxcount = 0;
-			if( !(BL_PC&battle_config.skill_reiteration) &&
-				skill->get_unit_flag(temp)&UF_NOREITERATION &&
-				skill->check_unit_range(&sd->bl,tbl->x,tbl->y,temp,skill_lv)
-			  ) {
+			if ((BL_PC & battle_config.skill_reiteration) == 0
+			    && (skill->get_unit_flag(temp, &sd->bl, tbl) & UF_NOREITERATION) != 0
+			    && skill->check_unit_range(&sd->bl, tbl->x, tbl->y, temp, skill_lv) != 0) {
 				continue;
 			}
-			if( BL_PC&battle_config.skill_nofootset &&
-				skill->get_unit_flag(temp)&UF_NOFOOTSET &&
-				skill->check_unit_range2(&sd->bl,tbl->x,tbl->y,temp,skill_lv)
-			  ) {
+			if ((BL_PC & battle_config.skill_nofootset) != 0
+			    && (skill->get_unit_flag(temp, &sd->bl, tbl) & UF_NOFOOTSET) != 0
+			    && skill->check_unit_range2(&sd->bl, tbl->x, tbl->y, temp, skill_lv) != 0) {
 				continue;
 			}
 			if ((BL_PC & battle_config.land_skill_limit) != 0
@@ -2887,16 +2883,14 @@ static int skill_counter_additional_effect(struct block_list *src, struct block_
 
 			if( (type = skill->get_casttype(auto_skill_id)) == CAST_GROUND ) {
 				int maxcount = 0;
-				if( !(BL_PC&battle_config.skill_reiteration) &&
-					skill->get_unit_flag(auto_skill_id)&UF_NOREITERATION &&
-					skill->check_unit_range(bl,tbl->x,tbl->y,auto_skill_id,auto_skill_lv)
-				  ) {
+				if ((BL_PC & battle_config.skill_reiteration) == 0
+				    && (skill->get_unit_flag(auto_skill_id, bl, tbl) & UF_NOREITERATION) != 0
+				    && skill->check_unit_range(bl, tbl->x, tbl->y, auto_skill_id, auto_skill_lv) != 0) {
 					continue;
 				}
-				if( BL_PC&battle_config.skill_nofootset &&
-					skill->get_unit_flag(auto_skill_id)&UF_NOFOOTSET &&
-					skill->check_unit_range2(bl,tbl->x,tbl->y,auto_skill_id,auto_skill_lv)
-				  ) {
+				if ((BL_PC & battle_config.skill_nofootset) != 0
+				    && (skill->get_unit_flag(auto_skill_id, bl, tbl) & UF_NOFOOTSET) != 0
+				    && skill->check_unit_range2(bl, tbl->x, tbl->y, auto_skill_id, auto_skill_lv) != 0) {
 					continue;
 				}
 				if ((BL_PC & battle_config.land_skill_limit) != 0
@@ -11639,19 +11633,15 @@ static int skill_castend_pos(int tid, int64 tick, int id, intptr_t data)
 		if( status->isdead(src) )
 			break;
 
-		if( !(src->type&battle_config.skill_reiteration) &&
-			skill->get_unit_flag(ud->skill_id)&UF_NOREITERATION &&
-			skill->check_unit_range(src,ud->skillx,ud->skilly,ud->skill_id,ud->skill_lv)
-		  )
-		{
+		if ((src->type & battle_config.skill_reiteration) == 0
+		    && (skill->get_unit_flag(ud->skill_id, src, NULL) & UF_NOREITERATION) != 0
+		    && skill->check_unit_range(src, ud->skillx, ud->skilly, ud->skill_id, ud->skill_lv) != 0) {
 			if (sd) clif->skill_fail(sd, ud->skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 			break;
 		}
-		if( src->type&battle_config.skill_nofootset &&
-			skill->get_unit_flag(ud->skill_id)&UF_NOFOOTSET &&
-			skill->check_unit_range2(src,ud->skillx,ud->skilly,ud->skill_id,ud->skill_lv)
-		  )
-		{
+		if ((src->type & battle_config.skill_nofootset) != 0
+		    && (skill->get_unit_flag(ud->skill_id, src, NULL) & UF_NOFOOTSET) != 0
+		    && skill->check_unit_range2(src, ud->skillx, ud->skilly, ud->skill_id, ud->skill_lv) != 0) {
 			if (sd) clif->skill_fail(sd, ud->skill_id, USESKILL_FAIL_LEVEL, 0, 0);
 			break;
 		}
@@ -12931,7 +12921,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 	range = skill->get_unit_range(skill_id, skill_lv, src, NULL);
 	interval = skill->get_unit_interval(skill_id, skill_lv, src, NULL);
 	target = skill->get_unit_target(skill_id, skill_lv, src, NULL);
-	unit_flag = skill->get_unit_flag(skill_id);
+	unit_flag = skill->get_unit_flag(skill_id, src, NULL);
 	layout = skill->get_unit_layout(skill_id,skill_lv,src,x,y);
 
 	if( map->list[src->m].unit_count ) {
@@ -13344,8 +13334,10 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 
 		if (!group->state.song_dance && !map->getcell(src->m, src, ux, uy, CELL_CHKREACH))
 			continue; // don't place skill units on walls (except for songs/dances/encores)
-		if( battle_config.skill_wall_check && skill->get_unit_flag(skill_id)&UF_PATHCHECK && !path->search_long(NULL,src,src->m,ux,uy,x,y,CELL_CHKWALL) )
+		if (battle_config.skill_wall_check != 0 && (skill->get_unit_flag(skill_id, src, NULL) & UF_PATHCHECK) != 0
+		    && !path->search_long(NULL, src, src->m, ux, uy, x, y, CELL_CHKWALL)) {
 			continue; // no path between cell and center of casting.
+		}
 
 		switch( skill_id ) {
 			case MG_FIREWALL:
@@ -13400,7 +13392,7 @@ static struct skill_unit_group *skill_unitsetting(struct block_list *src, uint16
 				skill->unitsetting2_unknown(src, &skill_id, &skill_lv, &x, &y, &flag, &unit_flag, &val1, &val2, &val3, group);
 				break;
 		}
-		if (skill->get_unit_flag(skill_id) & UF_RANGEDSINGLEUNIT && i == (layout->count / 2))
+		if ((skill->get_unit_flag(skill_id, src, NULL) & UF_RANGEDSINGLEUNIT) != 0 && i == layout->count / 2)
 			val2 |= UF_RANGEDSINGLEUNIT; // center.
 
 		map->foreachincell(skill->cell_overlap,src->m,ux,uy,BL_SKILL,skill_id, &alive, src);
@@ -18576,7 +18568,7 @@ static int skill_delunitgroup(struct skill_unit_group *group)
 		}
 	}
 
-	if (skill->get_unit_flag(group->skill_id)&(UF_DANCE|UF_SONG|UF_ENSEMBLE)) {
+	if ((skill->get_unit_flag(group->skill_id, src, NULL) & (UF_DANCE | UF_SONG | UF_ENSEMBLE)) != 0) {
 		struct status_change* sc = status->get_sc(src);
 		if (sc && sc->data[SC_DANCING])
 		{
@@ -18706,7 +18698,7 @@ static struct skill_unit_group_tickset *skill_unitgrouptickset_search(struct blo
 
 	set = ud->skillunittick;
 
-	if (skill->get_unit_flag(group->skill_id)&UF_NOOVERLAP)
+	if ((skill->get_unit_flag(group->skill_id, map->id2bl(group->src_id), bl) & UF_NOOVERLAP) != 0)
 		id = s = group->skill_id;
 	else
 		id = s = group->group_id;
@@ -19029,7 +19021,8 @@ static int skill_unit_move_sub(struct block_list *bl, va_list ap)
 	//Necessary in case the group is deleted after calling on_place/on_out [Skotlex]
 	skill_id = su->group->skill_id;
 
-	if( su->group->interval != -1 && !(skill->get_unit_flag(skill_id)&UF_DUALMODE) && skill_id != BD_LULLABY ) { //Lullaby is the exception, bugreport:411
+	if (su->group->interval != -1 && (skill->get_unit_flag(skill_id, map->id2bl(group->src_id), target) & UF_DUALMODE) == 0
+	    && skill_id != BD_LULLABY) { //Lullaby is the exception, bugreport:411
 		//Non-dualmode unit skills with a timer don't trigger when walking, so just return
 		if( dissonance ) skill->dance_switch(su, 1);
 		return 0;
@@ -19139,7 +19132,7 @@ static int skill_unit_move_unit_group(struct skill_unit_group *group, int16 m, i
 	if (group->unit.data==NULL)
 		return 0;
 
-	if (skill->get_unit_flag(group->skill_id)&UF_ENSEMBLE)
+	if ((skill->get_unit_flag(group->skill_id, map->id2bl(group->src_id), NULL) & UF_ENSEMBLE) != 0)
 		return 0; //Ensembles may not be moved around.
 
 	if( group->unit_id == UNT_ICEWALL || group->unit_id == UNT_WALLOFTHORN )

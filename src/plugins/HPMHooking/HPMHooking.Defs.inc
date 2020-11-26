@@ -7328,8 +7328,8 @@ typedef int (*HPMHOOK_pre_skill_get_maxcount) (int *skill_id, int *skill_lv, str
 typedef int (*HPMHOOK_post_skill_get_maxcount) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_blewcount) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_blewcount) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
-typedef int (*HPMHOOK_pre_skill_get_unit_flag) (int *skill_id);
-typedef int (*HPMHOOK_post_skill_get_unit_flag) (int retVal___, int skill_id);
+typedef int (*HPMHOOK_pre_skill_get_unit_flag) (int *skill_id, struct block_list **source, struct block_list **target);
+typedef int (*HPMHOOK_post_skill_get_unit_flag) (int retVal___, int skill_id, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_unit_target) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);
 typedef int (*HPMHOOK_post_skill_get_unit_target) (int retVal___, int skill_id, int skill_lv, struct block_list *source, struct block_list *target);
 typedef int (*HPMHOOK_pre_skill_get_unit_interval) (int *skill_id, int *skill_lv, struct block_list **source, struct block_list **target);

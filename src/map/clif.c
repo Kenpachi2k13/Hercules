@@ -5112,10 +5112,12 @@ static void clif_getareachar_skillunit(struct block_list *bl, struct skill_unit 
 	p.yPos = su->bl.y;
 
 	// Use invisible unit id for some ground skills.
-	if (skill->get_unit_flag(su->group->skill_id) & UF_RANGEDSINGLEUNIT && !(su->val2 & UF_RANGEDSINGLEUNIT))
+	if ((skill->get_unit_flag(su->group->skill_id, map->id2bl(su->group->src_id), NULL) & UF_RANGEDSINGLEUNIT) != 0
+	    && (su->val2 & UF_RANGEDSINGLEUNIT) == 0) {
 		p.job = UNT_DUMMYSKILL;
-	else
+	} else {
 		p.job = su->group->unit_id;
+	}
 
 #if PACKETVER >= 20110718
 	p.RadiusRange = (unsigned char)su->range;

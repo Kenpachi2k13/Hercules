@@ -6507,13 +6507,15 @@ static enum damage_lv battle_weapon_attack(struct block_list *src, struct block_
 				if( (type = skill->get_casttype(r_skill)) == CAST_GROUND ) {
 					int maxcount = 0;
 
-					if( !(BL_PC&battle_config.skill_reiteration)
-					 && skill->get_unit_flag(r_skill)&UF_NOREITERATION )
+					if ((BL_PC & battle_config.skill_reiteration) == 0
+					    && (skill->get_unit_flag(r_skill, src, target) & UF_NOREITERATION) != 0) {
 						type = -1;
+					}
 
-					if( BL_PC&battle_config.skill_nofootset
-					 && skill->get_unit_flag(r_skill)&UF_NOFOOTSET )
+					if ((BL_PC & battle_config.skill_nofootset) != 0
+					    && (skill->get_unit_flag(r_skill, src, target) & UF_NOFOOTSET) != 0) {
 						type = -1;
+					}
 
 					if ((BL_PC & battle_config.land_skill_limit) != 0
 					    && (maxcount = skill->get_maxcount(r_skill, r_lv, src, target)) > 0) {
